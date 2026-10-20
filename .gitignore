@@ -1,0 +1,9 @@
+# Dependências e caches
+node_modules/
+.env
+.env.local
+.env.*.local
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
