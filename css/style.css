@@ -151,20 +151,48 @@
   .burger.open span::after{ transform:translateY(-9px) rotate(-45deg); }
 
   .mobile-panel{
-    display:none;
+    display:flex;
     flex-direction:column;
-    background:var(--chocolate-darkest);
-    padding:6px 28px 22px;
-    border-bottom:3px dashed rgba(229,35,28,0.55);
+    background:rgba(24,10,8,0.98);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    max-height:0;
+    opacity:0;
+    overflow:hidden;
+    padding:0 24px;
+    border-bottom:3px dashed transparent;
+    transition:max-height .35s var(--ease), opacity .25s var(--ease), padding .3s var(--ease), border-color .3s;
   }
-  .mobile-panel.open{ display:flex; }
+  .mobile-panel.open{
+    max-height:520px;
+    opacity:1;
+    padding:10px 24px 24px;
+    border-bottom-color:rgba(229,35,28,0.55);
+  }
   .mobile-panel a{
     color:var(--cream-dim);
-    padding:12px 0;
+    padding:14px 4px;
     font-weight:600;
-    border-bottom:1px solid rgba(255,255,255,0.08);
+    font-size:1.02rem;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    transition:color .2s;
   }
-  .mobile-panel .nav-cta{ margin-top:14px; justify-content:center; }
+  .mobile-panel a:active{ color:var(--gold); }
+  .mobile-panel a::after{
+    content:'›';
+    font-size:1.4rem;
+    color:rgba(255,246,234,0.3);
+  }
+  .mobile-panel .nav-cta{
+    margin-top:16px;
+    justify-content:center;
+    padding:14px;
+    font-size:1rem;
+  }
+  .mobile-panel .nav-cta::after{ display:none; }
 
   @media (max-width:860px){
     nav.nav-links{ display:none; }
@@ -292,11 +320,30 @@
   @keyframes float{ 0%,100%{ transform:translateY(0) rotate(-6deg);} 50%{ transform:translateY(-10px) rotate(4deg);} }
 
   @media (max-width:900px){
-    .hero-inner{ grid-template-columns:1fr; text-align:center; }
-    .hero p.sub{ margin-left:auto; margin-right:auto; }
-    .hero-actions{ justify-content:center; }
-    .hero-trust{ justify-content:center; }
-    .hero-scallop{ left:50%; opacity:0.55; }
+    .hero{ padding:44px 0 36px; }
+    .hero-inner{ grid-template-columns:1fr; text-align:center; gap:26px; }
+    .hero-visual{ order:-1; margin-bottom:6px; }
+    .hero-visual img.logo-img{ width:min(210px, 52vw); }
+    .hero-visual .ring{ width:114%; height:114%; }
+    .hero-visual .heart-float{ width:48px; height:48px; right:8%; top:-4%; }
+    .hero h1{ font-size:clamp(2rem, 8vw, 2.7rem); line-height:1.1; margin:4px 0; }
+    .hero h1 .accent{ font-size:1.3em; margin-top:4px; }
+    .hero p.sub{ margin:14px auto 22px; font-size:0.98rem; line-height:1.45; max-width:92%; }
+    .hero-actions{ justify-content:center; gap:12px; }
+    .hero-actions .btn{ width:100%; max-width:320px; justify-content:center; padding:14px 20px; }
+    .hero-trust{
+      justify-content:center;
+      gap:8px 10px;
+      margin-top:22px;
+    }
+    .hero-trust li{
+      background:rgba(255,246,234,0.07);
+      padding:7px 14px;
+      border-radius:999px;
+      font-size:0.82rem;
+      border:1px solid rgba(255,246,234,0.08);
+    }
+    .hero-scallop{ left:50%; opacity:0.35; width:min(600px, 140vw); height:min(600px, 140vw); }
   }
 
   /* ===================== MARQUEE STRIP ===================== */
@@ -403,8 +450,24 @@
     font-style:italic;
   }
 
-  @media (max-width:900px){ .flavor-card{ flex-basis:calc((100% - 28px)/2); } }
-  @media (max-width:600px){ .flavor-card{ flex-basis:100%; } }
+  @media (max-width:900px){
+    .flavors{ padding:60px 0; }
+    .flavor-grid{ gap:18px; }
+    .flavor-card{ flex-basis:calc((100% - 18px)/2); border-radius:22px; }
+  }
+  @media (max-width:640px){
+    .flavor-grid{ gap:16px; }
+    .flavor-card{
+      flex-basis:100%;
+      border-radius:20px;
+    }
+    .flavor-photo{ aspect-ratio:16/10; }
+    .flavor-body{ padding:10px 16px 18px; }
+    .flavor-card h3{ font-size:1.18rem; margin:0 0 4px; }
+    .flavor-card p{ font-size:0.88rem; margin:0 0 14px; line-height:1.42; }
+    .flavor-price{ font-size:1.25rem; }
+    .flavor-btn{ padding:8px 22px; font-size:0.95rem; }
+  }
 
   /* ===================== STEPS ===================== */
   .steps-section{
@@ -449,8 +512,25 @@
   .step p{ color:var(--cream-dim); font-size:0.9rem; }
 
   @media (max-width:760px){
-    .steps-row{ grid-template-columns:1fr; gap:36px; }
+    .steps-section{ padding:54px 0; }
+    .steps-row{
+      grid-template-columns:repeat(2, 1fr);
+      gap:14px 10px;
+    }
     .steps-row::before{ display:none; }
+    .step{
+      padding:16px 10px;
+      background:rgba(255,246,234,0.04);
+      border-radius:18px;
+      border:1px solid rgba(255,246,234,0.06);
+    }
+    .step-num{
+      width:40px; height:40px;
+      font-size:1.05rem;
+      margin:0 auto 10px;
+    }
+    .step h3{ font-size:0.95rem; margin:0 0 4px; }
+    .step p{ font-size:0.8rem; line-height:1.35; margin:0; }
   }
 
   /* ===================== ABOUT ===================== */
@@ -490,8 +570,16 @@
   .about-visual .heart-big path.scribble{ color:var(--red); }
 
   @media (max-width:900px){
-    .about-inner{ grid-template-columns:1fr; }
-    .about-visual{ max-width:340px; margin:0 auto; order:-1; }
+    .about{ padding:54px 0; }
+    .about-inner{ grid-template-columns:1fr; gap:26px; text-align:center; }
+    .about-visual{
+      max-width:160px;
+      margin:0 auto;
+      order:-1;
+      box-shadow:var(--shadow-sm);
+    }
+    .about-copy p{ font-size:0.96rem; line-height:1.55; }
+    .about-sign{ font-size:1.6rem; }
   }
 
   /* ===================== TESTIMONIALS ===================== */
@@ -529,7 +617,12 @@
   .test-stars{ display:flex; gap:2px; margin-top:2px; }
   .test-stars svg{ width:13px; height:13px; color:var(--gold); }
 
-  @media (max-width:900px){ .test-grid{ grid-template-columns:1fr; } }
+  @media (max-width:900px){
+    .testimonials{ padding:54px 0; }
+    .test-grid{ grid-template-columns:1fr; gap:16px; }
+    .test-card{ padding:20px 18px; border-radius:18px; }
+    .test-card .quote{ font-size:0.92rem; margin:0 0 14px; }
+  }
 
   /* ===================== CTA / CONTACT ===================== */
   .cta-section{
@@ -565,6 +658,15 @@
   }
   .cta-meta li{ display:flex; align-items:center; gap:8px; }
   .cta-meta svg{ width:18px; height:18px; }
+
+  @media (max-width:900px){
+    .cta-section{ padding-top:54px; }
+    .cta-inner h2{ font-size:clamp(1.7rem, 6.5vw, 2.2rem); }
+    .cta-inner p{ font-size:0.95rem; margin-bottom:24px; }
+    .cta-actions{ flex-direction:column; align-items:center; gap:12px; }
+    .cta-actions .btn{ width:100%; max-width:300px; justify-content:center; }
+    .cta-meta{ flex-direction:column; align-items:center; gap:12px; font-size:0.88rem; padding-bottom:36px; }
+  }
 
   /* ===================== FOOTER ===================== */
   footer{
@@ -922,4 +1024,86 @@
   font-weight:800;
   font-family:'Baloo 2', sans-serif;
   color:var(--chocolate-darkest);
+}
+
+
+/* ===================== MOBILE ENHANCEMENTS & BOTTOM SHEET ===================== */
+@media (max-width: 600px) {
+  .wrap {
+    padding: 0 18px;
+  }
+
+  /* Modais como Bottom Sheet no celular */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-card {
+    max-width: 100%;
+    border-radius: 26px 26px 0 0;
+    border-bottom: none;
+    max-height: 90vh;
+    padding: 24px 18px calc(24px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .modal-overlay.active .modal-card {
+    transform: translateY(0);
+  }
+
+  .modal-close {
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.15rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.35rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-input, .form-textarea, .form-select {
+    font-size: 16px; /* Evita que o iOS Safari dê zoom automático indesejado */
+    padding: 12px 14px;
+  }
+
+  .order-product-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .order-product-card img {
+    width: 54px;
+    height: 54px;
+  }
+
+  /* Botão WhatsApp flutuante seguro para iPhones com barra inferior */
+  .wa-float {
+    width: 52px;
+    height: 52px;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .wa-float svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  /* Footer no mobile */
+  footer {
+    padding: 40px 0 calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 28px;
+  }
 }

@@ -13,6 +13,13 @@
       burger.classList.remove('open');
       burger.setAttribute('aria-expanded', 'false');
     }));
+    document.addEventListener('click', (e) => {
+      if (panel.classList.contains('open') && !panel.contains(e.target) && !burger.contains(e.target)) {
+        panel.classList.remove('open');
+        burger.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   // ---------- Scalloped / doily SVG path generator ----------
