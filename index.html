@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brownie da Malu — Brownies artesanais</title>
+<meta name="description" content="Brownies artesanais feitos à mão pela Malu. Peça pelo WhatsApp e receba fresquinho.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand">
+      <img src="img/logo.jpg" alt="Logo Brownie da Malu">
+      <span class="brand-name">Brownie <span>da Malu</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#sabores">Sabores</a>
+      <a href="#como-pedir">Como pedir</a>
+      <a href="#sobre">Sobre</a>
+      <a href="#depoimentos">Depoimentos</a>
+      <button class="nav-account-btn" id="navAuthBtn">Entrar / Cadastrar</button>
+      <a href="#contato" class="nav-cta">Pedir no WhatsApp</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#sabores">Sabores</a>
+    <a href="#como-pedir">Como pedir</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#depoimentos">Depoimentos</a>
+    <button class="nav-account-btn mobile-auth" id="navAuthBtnMobile">Entrar / Cadastrar</button>
+    <a href="#contato" class="nav-cta">Pedir no WhatsApp</a>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="top">
+  <div class="hero-pattern"></div>
+  <svg class="hero-scallop" id="heroScallop" viewBox="0 0 600 600" aria-hidden="true"></svg>
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow">direto do forno da Malu</p>
+      <h1>Brownie que aquece o dia<span class="accent">com carinho</span></h1>
+      <p class="sub">Brownies artesanais, assados aos poucos e do jeitinho da casa — para adoçar sua tarde em Porto Velho e região.</p>
+      <div class="hero-actions">
+        <a href="#contato" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M12 3a9 9 0 0 0-7.6 13.8L3 21l4.3-1.4A9 9 0 1 0 12 3Z" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 8.6c.2-.5.5-.5.8-.5h.6c.2 0 .4 0 .6.4.2.5.7 1.6.7 1.8s0 .3-.1.5c-.2.2-.3.3-.5.5-.2.2-.4.3-.2.6.3.5 1 1.3 1.8 1.8.6.4 1 .5 1.3.3.2-.1.6-.6.8-.8.2-.2.4-.2.6-.1l1.6.8c.2.1.4.2.4.4 0 .7-.2 1.4-.7 1.8-.5.4-1.1.7-1.8.6-1.7-.2-3.5-1-4.9-2.4-1.2-1.2-1.9-2.5-2.2-3.3-.3-.9-.2-1.7.2-2.3Z" fill="currentColor"/></svg>
+          Pedir no WhatsApp
+        </a>
+        <a href="#sabores" class="btn btn-outline">Ver sabores</a>
+      </div>
+      <ul class="hero-trust">
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.4-9.5 9-9.5 9Z" stroke="currentColor" stroke-width="1.6"/></svg> Feito à mão, sempre fresquinho</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Retirada ou entrega combinada</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Sabor novo toda semana</li>
+      </ul>
+    </div>
+    <div class="hero-visual">
+      <div class="ring"></div>
+      <img class="logo-img" src="img/logo.jpg" alt="Brownie da Malu — logo redonda vermelha e chocolate com coração rabiscado">
+      <svg class="heart-float" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+        <path d="M30 48S8 34 8 20a12 12 0 0 1 22-6 12 12 0 0 1 22 6c0 14-22 28-22 28Z" fill="currentColor" opacity="0.15"/>
+        <path d="M18 22c2-3 6-3 8 0m-4-4c1-3 4-4 6-2m6 2c2-2 5-1 6 2m-2 4c2 3 0 6-2 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<div class="marquee-strip">
+  <div class="marquee-track" id="marqueeTrack"></div>
+</div>
+
+<!-- ===================== SABORES ===================== -->
+<section class="flavors" id="sabores">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <p class="eyebrow" style="justify-content:center">no forno</p>
+      <h2>Sabores da casa</h2>
+      <p>Cada receita foi testada (e aprovada) em casa antes de chegar até você.</p>
+    </div>
+    <div class="flavor-grid" id="flavorGrid"></div>
+    <p class="price-note">Chame no WhatsApp para encomendar. 🍫</p>
+  </div>
+</section>
+
+<!-- ===================== COMO PEDIR ===================== -->
+<section class="steps-section" id="como-pedir">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <p class="eyebrow" style="justify-content:center">simples assim</p>
+      <h2>Como pedir</h2>
+      <p>Do WhatsApp até a sua mesa, em quatro passinhos.</p>
+    </div>
+    <div class="steps-row">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h3>Escolha os sabores</h3>
+        <p>Dá uma olhada no cardápio e separa os favoritos.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <h3>Chame no WhatsApp</h3>
+        <p>Manda uma mensagem pra Malu contando o pedido.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <h3>Combine a entrega</h3>
+        <p>Retirada ou entrega — o que for melhor pra você.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <h3>Receba e aproveite</h3>
+        <p>Seu brownie chega fresquinho, prontinho pra devorar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOBRE ===================== -->
+<section class="about" id="sobre">
+  <div class="wrap about-inner">
+    <div class="about-visual reveal">
+      <svg class="doily" viewBox="0 0 300 300" id="aboutDoily" aria-hidden="true"></svg>
+      <svg class="heart-big" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <path d="M50 82S12 58 12 33a19 19 0 0 1 35-10 19 19 0 0 1 35 10c0 25-32 49-32 49Z" fill="currentColor"/>
+        <path class="scribble" d="M30 36c3-5 10-5 13 0m-6-7c2-5 7-6 10-3m10 3c3-4 8-2 10 3m-3 7c3 5 0 10-3 13" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="about-copy reveal">
+      <p class="eyebrow">quem faz</p>
+      <h2 class="heading" style="font-size:clamp(1.8rem,3.4vw,2.4rem); font-weight:800; margin:0 0 16px;">Sobre a Malu</h2>
+      <p>Tudo começou na cozinha de casa, testando receita atrás de receita até acertar o ponto perfeito: casquinha crocante por fora, bem molhadinho por dentro. Hoje cada brownie ainda sai do mesmo jeito — feito à mão, em pouca quantidade, com atenção a cada fôrma.</p>
+      <p>Nada de linha de produção: é a Malu quem mistura, assa e embala, pensando em quem vai comer do outro lado.</p>
+      <span class="about-sign">com carinho, Malu 🤎</span>
+      <p style="font-size:0.82rem; opacity:0.65; margin-top:18px;">*Texto de exemplo — troque pela história real da Malu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEPOIMENTOS ===================== -->
+<section class="testimonials" id="depoimentos">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <p class="eyebrow" style="justify-content:center">boca a boca</p>
+      <h2>Quem já provou</h2>
+      <p>Um pouquinho do carinho que volta pra Malu.</p>
+      <div>
+        <button class="btn-review" id="btnOpenReviewModal">⭐ Deixar minha avaliação</button>
+      </div>
+    </div>
+    <div class="test-grid" id="testGrid"></div>
+    <p class="price-note">Depoimentos reais de quem já se apaixonou pelos brownies da Malu 🤎</p>
+  </div>
+</section>
+
+<!-- ===================== CTA / CONTATO ===================== -->
+<section class="cta-section" id="contato">
+  <div class="cta-scallop-top"></div>
+  <div class="wrap cta-inner reveal">
+    <p class="eyebrow">bora combinar?</p>
+    <h2>Vamos combinar seu brownie?</h2>
+    <p>Chama a Malu no WhatsApp, escolhe os sabores e combina a entrega. Simples, rápido e sempre fresquinho.</p>
+    <div class="cta-actions">
+      <a href="https://wa.me/5569993844237" target="_blank" rel="noopener" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M12 3a9 9 0 0 0-7.6 13.8L3 21l4.3-1.4A9 9 0 1 0 12 3Z" stroke="currentColor" stroke-width="1.8"/></svg>
+        (69) 9.9384-4237
+      </a>
+      <a href="https://instagram.com/browniesdamalu_" target="_blank" rel="noopener" class="btn btn-outline">
+        <svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
+        @browniesdamalu_
+      </a>
+    </div>
+    <ul class="cta-meta">
+      <li><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg> Porto Velho - RO e região</li>
+      <li><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Pedidos com antecedência</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <a href="#top" class="footer-brand">
+        <img src="img/logo.jpg" alt="Logo Brownie da Malu">
+        <span>Brownie da Malu</span>
+      </a>
+      <div class="footer-links">
+        <div>
+          <h4>Navegue</h4>
+          <ul>
+            <li><a href="#sabores">Sabores</a></li>
+            <li><a href="#como-pedir">Como pedir</a></li>
+            <li><a href="#sobre">Sobre</a></li>
+            <li><a href="#depoimentos">Depoimentos</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Fale com a gente</h4>
+          <ul>
+            <li><a href="https://wa.me/5569993844237" target="_blank" rel="noopener">(69) 9.9384-4237</a></li>
+            <li><a href="https://instagram.com/browniesdamalu_" target="_blank" rel="noopener">@browniesdamalu_</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Brownie da Malu. Feito com 🤎 em Porto Velho - RO.</span>
+      <div class="footer-social">
+        <a href="https://instagram.com/browniesdamalu_" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
+        </a>
+        <a href="https://wa.me/5569993844237" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 0 0-7.6 13.8L3 21l4.3-1.4A9 9 0 1 0 12 3Z" stroke="currentColor" stroke-width="1.8"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/5569993844237" target="_blank" rel="noopener" class="wa-float" aria-label="Pedir no WhatsApp">
+  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 0 0-7.6 13.8L3 21l4.3-1.4A9 9 0 1 0 12 3Z" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 8.6c.2-.5.5-.5.8-.5h.6c.2 0 .4 0 .6.4.2.5.7 1.6.7 1.8s0 .3-.1.5c-.2.2-.3.3-.5.5-.2.2-.4.3-.2.6.3.5 1 1.3 1.8 1.8.6.4 1 .5 1.3.3.2-.1.6-.6.8-.8.2-.2.4-.2.6-.1l1.6.8c.2.1.4.2.4.4 0 .7-.2 1.4-.7 1.8-.5.4-1.1.7-1.8.6-1.7-.2-3.5-1-4.9-2.4-1.2-1.2-1.9-2.5-2.2-3.3-.3-.9-.2-1.7.2-2.3Z" fill="currentColor"/></svg>
+</a>
+
+<!-- ===================== MODAL AUTH / CONTA ===================== -->
+<div class="modal-overlay" id="authModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div id="authLoggedOutView">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="loginTab">Entrar</button>
+        <button class="modal-tab" data-tab="registerTab">Cadastrar</button>
+      </div>
+
+      <!-- Tab Login -->
+      <div id="loginTab">
+        <div class="modal-header">
+          <h3>Bem-vindo(a) de volta! 🍫</h3>
+          <p>Acesse sua conta para ver seus pedidos e agilizar suas encomendas.</p>
+        </div>
+        <form id="formLogin">
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">E-mail</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="seu@email.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Senha</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:12px;">Entrar</button>
+        </form>
+      </div>
+
+      <!-- Tab Cadastro Completo -->
+      <div id="registerTab" style="display:none;">
+        <div class="modal-header">
+          <h3>Cadastro Completo 🤎</h3>
+          <p>Cadastre-se para salvar seu endereço de entrega e histórico de pedidos.</p>
+        </div>
+        <form id="formRegister">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="regName">Seu Nome</label>
+              <input type="text" id="regName" class="form-input" placeholder="Ex: Ana Clara" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPhone">WhatsApp / Telefone</label>
+              <input type="tel" id="regPhone" class="form-input" placeholder="(69) 99999-9999" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="regEmail">E-mail</label>
+              <input type="email" id="regEmail" class="form-input" placeholder="seu@email.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPassword">Senha</label>
+              <input type="password" id="regPassword" class="form-input" placeholder="Mínimo 6 dígitos" minlength="6" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="regAddress">Endereço (Rua / Av.)</label>
+              <input type="text" id="regAddress" class="form-input" placeholder="Ex: Av. Sete de Setembro" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regNumber">Número</label>
+              <input type="text" id="regNumber" class="form-input" placeholder="Ex: 1234" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="regNeighborhood">Bairro (Porto Velho)</label>
+              <input type="text" id="regNeighborhood" class="form-input" placeholder="Ex: Centro, Olaria..." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regRef">Ponto de Referência</label>
+              <input type="text" id="regRef" class="form-input" placeholder="Próximo a...">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:12px;">Criar meu cadastro</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- View Usuário Logado -->
+    <div id="authLoggedInView" style="display:none;">
+      <div class="modal-header">
+        <h3 id="loggedUserName">Olá, Cliente! 🤎</h3>
+        <p>Você está conectado. Seus pedidos ficam salvos no seu histórico.</p>
+      </div>
+      <div style="background:var(--white); border:2px solid var(--cream-dim); border-radius:var(--radius-md); padding:18px; margin-bottom:20px;">
+        <h4 style="margin:0 0 8px; font-family:'Baloo 2', sans-serif;">Dados de Entrega Salvos:</h4>
+        <p id="loggedUserAddress" style="margin:0; font-size:0.92rem; color:var(--chocolate-dark);"></p>
+        <p id="loggedUserPhone" style="margin:6px 0 0; font-size:0.88rem; color:var(--chocolate-light);"></p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button id="btnOpenOrdersModal" class="btn btn-primary" style="justify-content:center;">📦 Ver Meus Pedidos</button>
+        <button id="btnLogout" class="btn btn-outline" style="border-color:var(--red); color:var(--red); justify-content:center;">Sair da Conta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL PEDIDO / CHECKOUT ===================== -->
+<div class="modal-overlay" id="orderModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div class="modal-header">
+      <h3>Vamos preparar seu pedido! 🍫</h3>
+      <p>Confirmaremos seu pedido e ele ficará salvo no seu histórico antes de enviar à Malu.</p>
+    </div>
+    <div class="order-product-card">
+      <img id="orderModalImg" src="img/logo.jpg" alt="Produto selecionado">
+      <div class="order-product-info">
+        <h4 id="orderModalName">Nome do Brownie</h4>
+        <div class="price" id="orderModalPrice">R$ 14</div>
+      </div>
+    </div>
+
+    <form id="formCheckout">
+      <div class="form-group">
+        <label class="form-label">Quantidade</label>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" id="qtyMinus">-</button>
+          <span class="qty-display" id="qtyValue">1</span>
+          <button type="button" class="qty-btn" id="qtyPlus">+</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="orderCustomerName">Seu Nome</label>
+          <input type="text" id="orderCustomerName" class="form-input" required placeholder="Como a Malu pode te chamar?">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="orderCustomerPhone">WhatsApp</label>
+          <input type="tel" id="orderCustomerPhone" class="form-input" required placeholder="(69) 99999-9999">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="orderDeliveryType">Tipo de Encomenda</label>
+        <select id="orderDeliveryType" class="form-select">
+          <option value="entrega">Entrega em domicílio (Porto Velho)</option>
+          <option value="retirada">Retirada combinada</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="deliveryAddressGroup">
+        <label class="form-label" for="orderAddress">Endereço de Entrega</label>
+        <input type="text" id="orderAddress" class="form-input" placeholder="Rua, número e bairro em Porto Velho">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="orderNotes">Observações (opcional)</label>
+        <textarea id="orderNotes" class="form-textarea" rows="2" placeholder="Ex: Para presente com bilhetinho, entregar à tarde..."></textarea>
+      </div>
+
+      <div style="background:var(--white); border-radius:14px; padding:14px 18px; margin:16px 0; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:700;">Total Estimado:</span>
+        <span id="orderModalTotal" style="font-family:'Baloo 2', sans-serif; font-size:1.4rem; font-weight:800; color:var(--red);">R$ 14,00</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+        Confirmar Pedido & Abrir WhatsApp
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL DEPOIMENTO ===================== -->
+<div class="modal-overlay" id="reviewModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div class="modal-header">
+      <h3>Deixe sua avaliação 🤎</h3>
+      <p>Seu comentário aparecerá no site para inspirar outros amantes de brownie!</p>
+    </div>
+    <form id="formReview">
+      <div class="form-group">
+        <label class="form-label">Sua nota:</label>
+        <div class="star-rating" id="reviewStars">
+          <span class="star active" data-rating="1">★</span>
+          <span class="star active" data-rating="2">★</span>
+          <span class="star active" data-rating="3">★</span>
+          <span class="star active" data-rating="4">★</span>
+          <span class="star active" data-rating="5">★</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="reviewName">Seu Nome</label>
+          <input type="text" id="reviewName" class="form-input" placeholder="Ex: Mariana Silva" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reviewCity">Bairro / Cidade</label>
+          <input type="text" id="reviewCity" class="form-input" value="Porto Velho - RO" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reviewComment">Seu Comentário</label>
+        <textarea id="reviewComment" class="form-textarea" rows="4" placeholder="Conta pra gente o que achou dos brownies da Malu..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Publicar Avaliação</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL HISTÓRICO DE PEDIDOS ===================== -->
+<div class="modal-overlay" id="ordersModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div class="modal-header">
+      <h3>Meus Pedidos 📦</h3>
+      <p>Histórico de pedidos registrados no sistema.</p>
+    </div>
+    <div id="ordersListContainer" class="orders-list">
+      <p style="text-align:center; color:var(--chocolate-light);">Carregando pedidos...</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabase.js"></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>
