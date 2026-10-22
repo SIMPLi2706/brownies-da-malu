@@ -223,22 +223,29 @@ window.BrownieApp = {
   },
 
   // Criar Pedido (Memória de Pedidos)
-  async criarPedido({ sabor, preco, quantidade, tipoEntrega, enderecoEntrega, observacoes }) {
+  async criarPedido({ itens, valorTotal, sabor, preco, quantidade, tipoEntrega, enderecoEntrega, observacoes, nomeCliente, telefoneCliente }) {
     if (!supabaseClient) throw new Error('Configure o Supabase primeiro.');
 
     const codigo = 'BM-' + Math.floor(1000 + Math.random() * 9000);
-    const precoUnit = parseFloat(String(preco).replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
-    const total = precoUnit * (parseInt(quantidade, 10) || 1);
 
-    const nomeCliente = this.currentProfile?.nome || this.currentUser?.user_metadata?.nome || 'Cliente do Site';
-    const telefoneCliente = this.currentProfile?.telefone || this.currentUser?.user_metadata?.telefone || '';
+    let finalItens = itens;
+    let total = valorTotal;
+
+    if (!finalItens || finalItens.length === 0) {
+      const precoUnit = parseFloat(String(preco).replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      total = precoUnit * (parseInt(quantidade, 10) || 1);
+      finalItens = [{ sabor, preco, quantidade: parseInt(quantidade, 10) || 1, subtotal: total }];
+    }
+
+    const nome = nomeCliente || this.currentProfile?.nome || this.currentUser?.user_metadata?.nome || 'Cliente do Site';
+    const telefone = telefoneCliente || this.currentProfile?.telefone || this.currentUser?.user_metadata?.telefone || '';
 
     const payload = {
       codigo_pedido: codigo,
       user_id: this.currentUser ? this.currentUser.id : null,
-      nome_cliente: nomeCliente,
-      telefone_cliente: telefoneCliente,
-      itens: [{ sabor, preco, quantidade, subtotal: total }],
+      nome_cliente: nome,
+      telefone_cliente: telefone,
+      itens: finalItens,
       valor_total: total,
       tipo_entrega: tipoEntrega || 'entrega',
       endereco_entrega: enderecoEntrega || (this.currentProfile ? `${this.currentProfile.endereco}, ${this.currentProfile.numero} - ${this.currentProfile.bairro}` : 'A combinar'),

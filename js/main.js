@@ -1,4 +1,97 @@
 (function(){
+  // ===================== TOAST NOTIFICATION SYSTEM =====================
+  function showToast(message, type = 'success') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    const icon = type === 'success' ? '🤎' : type === 'error' ? '⚠️' : 'ℹ️';
+    toast.innerHTML = `
+      <span class="toast-icon">${icon}</span>
+      <span class="toast-message">${escapeHtml(message)}</span>
+      <button class="toast-close" aria-label="Fechar aviso">&times;</button>
+    `;
+
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 300);
+    });
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 320);
+      }
+    }, 3800);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ===================== BUSCA INTELIGENTE DE CEP (VIACEP) =====================
+  async function buscarCep(cepRaw, prefix = 'reg') {
+    const cep = String(cepRaw || '').replace(/\D/g, '');
+    if (cep.length !== 8) {
+      showToast('Digite um CEP válido com 8 números.', 'info');
+      return;
+    }
+
+    const addrField = document.getElementById(`${prefix}Address`);
+    const neighField = document.getElementById(`${prefix}Neighborhood`);
+    const numField = document.getElementById(`${prefix}Number`);
+    const statusEl = document.getElementById(`${prefix}CepStatus`);
+
+    if (statusEl) statusEl.textContent = 'Buscando endereço... ⏳';
+
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await res.json();
+
+      if (data.erro) {
+        if (statusEl) statusEl.textContent = 'CEP não localizado. Pode digitar o endereço manualmente.';
+        showToast('CEP não encontrado. Digite o endereço manualmente.', 'info');
+        return;
+      }
+
+      if (addrField && data.logradouro) addrField.value = data.logradouro;
+      if (neighField && data.bairro) neighField.value = data.bairro;
+      if (statusEl) statusEl.textContent = `✓ ${data.logradouro ? data.logradouro + ' - ' : ''}${data.bairro || ''} (${data.localidade || 'Porto Velho'}-${data.uf || 'RO'})`;
+
+      showToast(`Endereço localizado: ${data.logradouro || data.bairro}! 📍`, 'success');
+
+      if (numField) numField.focus();
+    } catch (err) {
+      if (statusEl) statusEl.textContent = 'Erro ao consultar CEP. Digite manualmente.';
+    }
+  }
+
+  function aplicarMascaraCep(input) {
+    if (!input) return;
+    input.addEventListener('input', () => {
+      let v = input.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) {
+        v = v.slice(0, 5) + '-' + v.slice(5);
+      }
+      input.value = v;
+    });
+  }
+
   // ---------- Mobile nav ----------
   const burger = document.getElementById('burger');
   const panel = document.getElementById('mobilePanel');
@@ -62,8 +155,136 @@
     { name:"Ninho com Morango", desc:"Creme de leite Ninho com morango fresquinho no brownie de chocolate.", price:"R$ 14", rawPrice:14, img:"img/sabor-ninho-com-morango.jpg" },
     { name:"Chocolate Tradicional", desc:"Brownie bem macio com recheio cremoso de chocolate.", price:"R$ 12", rawPrice:12, img:"img/sabor-chocolate-tradicional.jpg" },
     { name:"Brownie de Paçoca", desc:"Creme suave com paçoca crocante em cada mordida.", price:"R$ 12", rawPrice:12, img:"img/sabor-brownie-de-pacoca.jpg" },
-    { name:"Brownie no Copo (250ml)", desc:"Creme de baunilha, pedaços de brownie e calda de chocolate. Prático e gostoso!", price:"R$ 18", rawPrice:18, img:"img/sabor-brownie-no-copo-250ml.jpg" }
+    { name:"Brownie no Copo (250ml)", desc:"Ninho, pedaços de brownie e calda de chocolate. Prático e gostoso!", price:"R$ 18", rawPrice:18, img:"img/sabor-brownie-no-copo-250ml.jpg" }
   ];
+
+  // ===================== CARRINHO MULTISSABORES =====================
+  const BrownieCart = {
+    items: {}, // { [name]: { flavor, qty } }
+
+    init() {
+      try {
+        const saved = localStorage.getItem('brownie_cart_data');
+        if (saved) this.items = JSON.parse(saved);
+      } catch(e) {}
+      this.updateUI();
+    },
+
+    addItem(flavor) {
+      if (!this.items[flavor.name]) {
+        this.items[flavor.name] = { flavor, qty: 1 };
+      } else {
+        this.items[flavor.name].qty += 1;
+      }
+      this.save();
+      this.updateUI();
+      showToast(`1x ${flavor.name} adicionado à sacola! 🛍️`, 'success');
+    },
+
+    changeQty(flavorName, delta) {
+      if (!this.items[flavorName]) return;
+      this.items[flavorName].qty += delta;
+      if (this.items[flavorName].qty <= 0) {
+        delete this.items[flavorName];
+      }
+      this.save();
+      this.updateUI();
+    },
+
+    deleteItem(flavorName) {
+      delete this.items[flavorName];
+      this.save();
+      this.updateUI();
+    },
+
+    clear() {
+      this.items = {};
+      this.save();
+      this.updateUI();
+    },
+
+    getCount() {
+      return Object.values(this.items).reduce((acc, it) => acc + (it.qty || 0), 0);
+    },
+
+    getTotal() {
+      return Object.values(this.items).reduce((acc, it) => acc + (it.flavor.rawPrice * it.qty), 0);
+    },
+
+    save() {
+      try {
+        localStorage.setItem('brownie_cart_data', JSON.stringify(this.items));
+      } catch(e) {}
+    },
+
+    updateUI() {
+      const count = this.getCount();
+      const total = this.getTotal();
+      const formattedTotal = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+      // Barra flutuante
+      const floatingBar = document.getElementById('floatingCartBar');
+      const floatingCount = document.getElementById('floatingCartCount');
+      const floatingTotal = document.getElementById('floatingCartTotal');
+
+      if (floatingBar) {
+        floatingBar.classList.toggle('active', count > 0);
+        floatingBar.setAttribute('aria-hidden', count === 0 ? 'true' : 'false');
+      }
+      if (floatingCount) floatingCount.textContent = count;
+      if (floatingTotal) floatingTotal.textContent = formattedTotal;
+
+      // Resumo dentro do Modal da Sacola
+      const cartSubtotal = document.getElementById('cartSubtotal');
+      const cartFinalTotal = document.getElementById('cartFinalTotal');
+      if (cartSubtotal) cartSubtotal.textContent = formattedTotal;
+      if (cartFinalTotal) cartFinalTotal.textContent = formattedTotal;
+
+      this.renderCartModalList();
+    },
+
+    renderCartModalList() {
+      const container = document.getElementById('cartItemsList');
+      if (!container) return;
+
+      const entries = Object.values(this.items);
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty-state">
+            <span>🧺</span>
+            <p style="margin:0; font-weight:700;">Sua sacola está vazia.</p>
+            <p style="margin:4px 0 0; font-size:0.85rem;">Escolha seus sabores favoritos no cardápio!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      entries.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'cart-item-row';
+        const itemTotal = `R$ ${(it.flavor.rawPrice * it.qty).toFixed(2).replace('.', ',')}`;
+        row.innerHTML = `
+          <div class="cart-item-info">
+            <img src="${it.flavor.img}" alt="${it.flavor.name}" class="cart-item-img">
+            <div>
+              <div class="cart-item-title">${it.flavor.name}</div>
+              <div class="cart-item-price">${it.flavor.price} cada • <strong>${itemTotal}</strong></div>
+            </div>
+          </div>
+          <div class="cart-qty-wrap">
+            <button type="button" class="cart-qty-btn" data-action="minus" data-name="${it.flavor.name}">-</button>
+            <span class="cart-qty-num">${it.qty}</span>
+            <button type="button" class="cart-qty-btn" data-action="plus" data-name="${it.flavor.name}">+</button>
+            <button type="button" class="cart-del-btn" data-action="del" data-name="${it.flavor.name}" title="Remover item">🗑️</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+  };
+
+  // Renderiza cardápio com botões duplos (+ Sacola e Pedir Já)
   const grid = document.getElementById('flavorGrid');
   if (grid) {
     grid.innerHTML = '';
@@ -77,13 +298,43 @@
           <p>${f.desc}</p>
           <div class="flavor-foot">
             <span class="flavor-price">${f.price}</span>
-            <button class="flavor-btn btn-order-trigger" data-name="${f.name}" data-price="${f.price}" data-raw="${f.rawPrice}" data-img="${f.img}">Pedir</button>
+            <div class="flavor-actions-group">
+              <button class="flavor-btn btn-add-cart" data-name="${f.name}">+ Sacola</button>
+              <button class="flavor-btn flavor-btn-alt btn-order-trigger" data-name="${f.name}" data-price="${f.price}" data-raw="${f.rawPrice}" data-img="${f.img}">Pedir Já</button>
+            </div>
           </div>
         </div>
       `;
       grid.appendChild(card);
     });
   }
+
+  // Delegador de cliques no cardápio
+  document.addEventListener('click', (e) => {
+    const btnAdd = e.target.closest('.btn-add-cart');
+    if (btnAdd) {
+      const flavorName = btnAdd.dataset.name;
+      const found = flavors.find(x => x.name === flavorName);
+      if (found) BrownieCart.addItem(found);
+      return;
+    }
+
+    const cartQtyBtn = e.target.closest('.cart-qty-btn');
+    if (cartQtyBtn) {
+      const action = cartQtyBtn.dataset.action;
+      const name = cartQtyBtn.dataset.name;
+      if (action === 'plus') BrownieCart.changeQty(name, 1);
+      if (action === 'minus') BrownieCart.changeQty(name, -1);
+      return;
+    }
+
+    const cartDelBtn = e.target.closest('.cart-del-btn');
+    if (cartDelBtn) {
+      const name = cartDelBtn.dataset.name;
+      BrownieCart.deleteItem(name);
+      return;
+    }
+  });
 
   // ---------- Marquee content ----------
   const brownieBit = `<svg viewBox="0 0 64 64" fill="none"><rect x="14" y="14" width="36" height="28" rx="5" fill="currentColor"/><path d="M18 22c3-3 6 2 9-1s5 3 8 0 6 2 9-1" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"/></svg>`;
@@ -141,7 +392,7 @@
     revealEls.forEach(el => io.observe(el));
   }
 
-  // ===================== SISTEMA DE MODAIS & SUPABASE =====================
+  // ===================== SISTEMA DE MODAIS =====================
   function abrirModal(id) {
     const el = document.getElementById(id);
     if (el) {
@@ -177,7 +428,7 @@
   const navAuthBtn = document.getElementById('navAuthBtn');
   const navAuthBtnMobile = document.getElementById('navAuthBtnMobile');
 
-  function openAuthModal() {
+  function openAuthModal(defaultTab = 'loginTab') {
     const app = window.BrownieApp;
     const loggedOutView = document.getElementById('authLoggedOutView');
     const loggedInView = document.getElementById('authLoggedInView');
@@ -189,7 +440,7 @@
         const name = app.currentProfile?.nome || app.currentUser.user_metadata?.nome || 'Cliente';
         document.getElementById('loggedUserName').textContent = `Olá, ${name}! 🤎`;
         const addr = app.currentProfile?.endereco
-          ? `${app.currentProfile.endereco}, nº ${app.currentProfile.numero} - ${app.currentProfile.bairro} (${app.currentProfile.cidade})`
+          ? `${app.currentProfile.endereco}, nº ${app.currentProfile.numero || 'S/N'} - ${app.currentProfile.bairro || ''} (${app.currentProfile.cidade || 'Porto Velho - RO'})`
           : 'Nenhum endereço cadastrado ainda.';
         document.getElementById('loggedUserAddress').textContent = addr;
         document.getElementById('loggedUserPhone').textContent = app.currentProfile?.telefone ? `WhatsApp: ${app.currentProfile.telefone}` : '';
@@ -197,11 +448,16 @@
     } else {
       if (loggedOutView) loggedOutView.style.display = 'block';
       if (loggedInView) loggedInView.style.display = 'none';
+
+      // Alterna aba inicial
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === defaultTab));
+      document.getElementById('loginTab').style.display = defaultTab === 'loginTab' ? 'block' : 'none';
+      document.getElementById('registerTab').style.display = defaultTab === 'registerTab' ? 'block' : 'none';
     }
     abrirModal('authModal');
   }
 
-  if (navAuthBtn) navAuthBtn.addEventListener('click', openAuthModal);
+  if (navAuthBtn) navAuthBtn.addEventListener('click', () => openAuthModal());
   if (navAuthBtnMobile) navAuthBtnMobile.addEventListener('click', () => {
     if (panel) panel.classList.remove('open');
     openAuthModal();
@@ -218,6 +474,28 @@
     });
   });
 
+  // Máscaras e busca de CEP no cadastro
+  const regCep = document.getElementById('regCep');
+  const btnBuscarCepReg = document.getElementById('btnBuscarCepReg');
+  aplicarMascaraCep(regCep);
+  if (regCep) {
+    regCep.addEventListener('blur', () => {
+      if (regCep.value.replace(/\D/g, '').length === 8) {
+        buscarCep(regCep.value, 'reg');
+      }
+    });
+    regCep.addEventListener('keyup', (e) => {
+      if (regCep.value.replace(/\D/g, '').length === 8) {
+        buscarCep(regCep.value, 'reg');
+      }
+    });
+  }
+  if (btnBuscarCepReg) {
+    btnBuscarCepReg.addEventListener('click', () => {
+      if (regCep) buscarCep(regCep.value, 'reg');
+    });
+  }
+
   // Login Form
   const formLogin = document.getElementById('formLogin');
   if (formLogin) {
@@ -232,10 +510,10 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Acessando...';
         await window.BrownieApp.fazerLogin(email, password);
-        alert('Login efetuado com sucesso!');
+        showToast('Login efetuado com sucesso! 🤎', 'success');
         fecharModal('authModal');
       } catch (err) {
-        alert('Erro ao entrar: ' + (err.message || 'Verifique e-mail e senha.'));
+        showToast(err.message || 'Erro ao entrar. Verifique os dados.', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
@@ -266,14 +544,18 @@
         submitBtn.textContent = 'Cadastrando...';
         const res = await window.BrownieApp.cadastrarUsuario(payload);
         if (res?.requiresEmailConfirmation) {
-          alert('Conta criada com sucesso! 🤎\n\nEnviamos um link de confirmação para o seu e-mail para ativar sua conta. (Dica: você também pode desativar a confirmação de e-mail no painel do Supabase para logins imediatos sem precisar de e-mail).');
+          showToast('Conta criada! Enviamos um link de confirmação para o seu e-mail.', 'info');
         } else {
-          alert('Cadastro realizado com sucesso! Seja bem-vindo(a)! 🤎');
+          showToast('Cadastro realizado com sucesso! Seja bem-vindo(a)! 🤎', 'success');
         }
         formRegister.reset();
         fecharModal('authModal');
+
+        // Esconde barra de boas-vindas
+        const topBar = document.getElementById('topWelcomeBar');
+        if (topBar) topBar.classList.remove('visible');
       } catch (err) {
-        alert('Atenção: ' + (err.message || 'Tente novamente.'));
+        showToast(err.message || 'Não foi possível cadastrar. Tente novamente.', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
@@ -286,12 +568,72 @@
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
       await window.BrownieApp.sair();
-      alert('Você saiu da sua conta.');
+      showToast('Você saiu da sua conta.', 'info');
       fecharModal('authModal');
     });
   }
 
-  // ---------- Modal Pedido / Checkout ----------
+  // ===================== ONBOARDING: NA CARA DO CLIENTE NOVO =====================
+  function setupWelcomeOnboarding() {
+    const isDismissed = localStorage.getItem('malu_welcome_dismissed');
+    const isLogged = !!window.BrownieApp.currentUser;
+
+    const topBar = document.getElementById('topWelcomeBar');
+    const btnTopBarRegister = document.getElementById('btnTopBarRegister');
+    const btnDismissTopBar = document.getElementById('btnDismissTopBar');
+
+    const btnWelcomeRegister = document.getElementById('btnWelcomeRegister');
+    const btnWelcomeLogin = document.getElementById('btnWelcomeLogin');
+    const btnWelcomeDismiss = document.getElementById('btnWelcomeDismiss');
+
+    // Barra no topo
+    if (!isLogged && topBar) {
+      topBar.classList.add('visible');
+    }
+
+    if (btnTopBarRegister) {
+      btnTopBarRegister.addEventListener('click', () => openAuthModal('registerTab'));
+    }
+    if (btnDismissTopBar) {
+      btnDismissTopBar.addEventListener('click', () => {
+        if (topBar) topBar.classList.remove('visible');
+      });
+    }
+
+    // Modal de Boas-Vindas no primeiro acesso
+    if (!isDismissed && !isLogged) {
+      setTimeout(() => {
+        if (!window.BrownieApp.currentUser) {
+          abrirModal('welcomeModal');
+        }
+      }, 1200);
+    }
+
+    if (btnWelcomeRegister) {
+      btnWelcomeRegister.addEventListener('click', () => {
+        fecharModal('welcomeModal');
+        localStorage.setItem('malu_welcome_dismissed', 'true');
+        openAuthModal('registerTab');
+      });
+    }
+    if (btnWelcomeLogin) {
+      btnWelcomeLogin.addEventListener('click', () => {
+        fecharModal('welcomeModal');
+        localStorage.setItem('malu_welcome_dismissed', 'true');
+        openAuthModal('loginTab');
+      });
+    }
+    if (btnWelcomeDismiss) {
+      btnWelcomeDismiss.addEventListener('click', () => {
+        fecharModal('welcomeModal');
+        localStorage.setItem('malu_welcome_dismissed', 'true');
+        const target = document.getElementById('sabores');
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  }
+
+  // ---------- Modal Pedido Rápido (Item Único) ----------
   let currentOrderFlavor = null;
   let currentQty = 1;
 
@@ -324,7 +666,7 @@
     if (app && app.currentProfile) {
       document.getElementById('orderCustomerName').value = app.currentProfile.nome || '';
       document.getElementById('orderCustomerPhone').value = app.currentProfile.telefone || '';
-      const addr = app.currentProfile.endereco ? `${app.currentProfile.endereco}, ${app.currentProfile.numero} - ${app.currentProfile.bairro}` : '';
+      const addr = app.currentProfile.endereco ? `${app.currentProfile.endereco}, ${app.currentProfile.numero || 'S/N'} - ${app.currentProfile.bairro || ''}` : '';
       document.getElementById('orderAddress').value = addr;
     }
 
@@ -371,7 +713,6 @@
 
       let codigoPedido = 'BM-' + Math.floor(1000 + Math.random() * 9000);
 
-      // Salva no Supabase (Memória de Pedidos)
       try {
         if (window.BrownieApp && window.BrownieApp.supabase) {
           const salvo = await window.BrownieApp.criarPedido({
@@ -380,17 +721,18 @@
             quantidade: currentQty,
             tipoEntrega,
             enderecoEntrega,
-            observacoes
+            observacoes,
+            nomeCliente,
+            telefoneCliente
           });
           if (salvo?.codigo_pedido) {
             codigoPedido = salvo.codigo_pedido;
           }
         }
       } catch (err) {
-        console.warn('Pedido continuará via WhatsApp mesmo sem banco:', err);
+        console.warn('Gravando pedido via WhatsApp fallback:', err);
       }
 
-      // Monta texto formatado para o WhatsApp
       let msg = `*Pedido ${codigoPedido} - Brownie da Malu*\n\n`;
       msg += `🍫 *Item:* ${currentQty}x ${currentOrderFlavor.name}\n`;
       msg += `💰 *Total Estimado:* ${totalFormatado}\n`;
@@ -406,8 +748,173 @@
       msg += `\n_Pedido registrado no site. Podemos confirmar?_`;
 
       fecharModal('orderModal');
+      showToast(`Pedido ${codigoPedido} registrado com sucesso! 🤎`, 'success');
 
-      // Abre WhatsApp
+      const waUrl = `https://wa.me/5569993844237?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank', 'noopener');
+    });
+  }
+
+  // ===================== MODAL DA SACOLA / CHECKOUT MULTISSABORES =====================
+  const btnOpenCart = document.getElementById('btnOpenCartModal');
+  const cartCep = document.getElementById('cartCep');
+  const btnBuscarCepCart = document.getElementById('btnBuscarCepCart');
+  const cartDeliveryType = document.getElementById('cartDeliveryType');
+  const cartDeliveryFields = document.getElementById('cartDeliveryFields');
+  const btnCheckoutCart = document.getElementById('btnCheckoutCart');
+
+  aplicarMascaraCep(cartCep);
+  if (cartCep) {
+    cartCep.addEventListener('blur', () => {
+      if (cartCep.value.replace(/\D/g, '').length === 8) {
+        buscarCep(cartCep.value, 'cart');
+      }
+    });
+    cartCep.addEventListener('keyup', () => {
+      if (cartCep.value.replace(/\D/g, '').length === 8) {
+        buscarCep(cartCep.value, 'cart');
+      }
+    });
+  }
+  if (btnBuscarCepCart) {
+    btnBuscarCepCart.addEventListener('click', () => {
+      if (cartCep) buscarCep(cartCep.value, 'cart');
+    });
+  }
+
+  if (cartDeliveryType && cartDeliveryFields) {
+    cartDeliveryType.addEventListener('change', () => {
+      const isRetirada = cartDeliveryType.value === 'retirada';
+      const cepGroup = document.getElementById('cartCepGroup');
+      const addrGroup = document.getElementById('cartAddressGroup');
+      const bairroGroup = document.getElementById('cartBairroGroup');
+      if (cepGroup) cepGroup.style.display = isRetirada ? 'none' : 'block';
+      if (addrGroup) addrGroup.style.display = isRetirada ? 'none' : 'grid';
+      if (bairroGroup) bairroGroup.style.display = isRetirada ? 'none' : 'grid';
+    });
+  }
+
+  if (btnOpenCart) {
+    btnOpenCart.addEventListener('click', () => {
+      // Preenche dados do cliente se estiver logado
+      const app = window.BrownieApp;
+      if (app && app.currentProfile) {
+        const p = app.currentProfile;
+        const nameField = document.getElementById('cartCustomerName');
+        const phoneField = document.getElementById('cartCustomerPhone');
+        const addrField = document.getElementById('cartAddress');
+        const numField = document.getElementById('cartNumber');
+        const neighField = document.getElementById('cartNeighborhood');
+        const refField = document.getElementById('cartRef');
+
+        if (nameField && !nameField.value) nameField.value = p.nome || '';
+        if (phoneField && !phoneField.value) phoneField.value = p.telefone || '';
+        if (addrField && !addrField.value) addrField.value = p.endereco || '';
+        if (numField && !numField.value) numField.value = p.numero || '';
+        if (neighField && !neighField.value) neighField.value = p.bairro || '';
+        if (refField && !refField.value) refField.value = p.ponto_referencia || '';
+      }
+      BrownieCart.updateUI();
+      abrirModal('cartModal');
+    });
+  }
+
+  if (btnCheckoutCart) {
+    btnCheckoutCart.addEventListener('click', async () => {
+      const entries = Object.values(BrownieCart.items);
+      if (entries.length === 0) {
+        showToast('Sua sacola está vazia! Escolha brownies no cardápio.', 'info');
+        return;
+      }
+
+      const nomeCliente = document.getElementById('cartCustomerName')?.value.trim() || '';
+      const telefoneCliente = document.getElementById('cartCustomerPhone')?.value.trim() || '';
+      const tipoEntrega = document.getElementById('cartDeliveryType')?.value || 'entrega';
+      const endereco = document.getElementById('cartAddress')?.value.trim() || '';
+      const numero = document.getElementById('cartNumber')?.value.trim() || '';
+      const bairro = document.getElementById('cartNeighborhood')?.value.trim() || '';
+      const ref = document.getElementById('cartRef')?.value.trim() || '';
+      const obs = document.getElementById('cartNotes')?.value.trim() || '';
+
+      if (!nomeCliente) {
+        showToast('Por favor, digite seu nome.', 'info');
+        document.getElementById('cartCustomerName')?.focus();
+        return;
+      }
+      if (!telefoneCliente) {
+        showToast('Por favor, informe seu WhatsApp.', 'info');
+        document.getElementById('cartCustomerPhone')?.focus();
+        return;
+      }
+
+      let enderecoFormatado = '';
+      if (tipoEntrega === 'entrega') {
+        if (!endereco) {
+          showToast('Por favor, digite seu endereço de entrega.', 'info');
+          document.getElementById('cartAddress')?.focus();
+          return;
+        }
+        enderecoFormatado = `${endereco}, nº ${numero || 'S/N'}${bairro ? ' - ' + bairro : ''}${ref ? ' (' + ref + ')' : ''}`;
+      } else {
+        enderecoFormatado = 'Retirada combinada no local';
+      }
+
+      const totalNum = BrownieCart.getTotal();
+      const totalFormatado = `R$ ${totalNum.toFixed(2).replace('.', ',')}`;
+      let codigoPedido = 'BM-' + Math.floor(1000 + Math.random() * 9000);
+
+      // Prepara lista para o banco e WhatsApp
+      const itensBanco = entries.map(it => ({
+        sabor: it.flavor.name,
+        preco: it.flavor.price,
+        quantidade: it.qty,
+        subtotal: it.flavor.rawPrice * it.qty
+      }));
+
+      // Salva no Supabase
+      try {
+        if (window.BrownieApp && window.BrownieApp.supabase) {
+          const salvo = await window.BrownieApp.criarPedido({
+            itens: itensBanco,
+            valorTotal: totalNum,
+            tipoEntrega,
+            enderecoEntrega: enderecoFormatado,
+            observacoes: obs,
+            nomeCliente,
+            telefoneCliente
+          });
+          if (salvo?.codigo_pedido) {
+            codigoPedido = salvo.codigo_pedido;
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao salvar no Supabase, prosseguindo com WhatsApp:', err);
+      }
+
+      // Monta texto formatado e elegante para o WhatsApp
+      let msg = `*Pedido ${codigoPedido} - Brownie da Malu*\n\n`;
+      msg += `🛍️ *Itens da Sacola:*\n`;
+      entries.forEach(it => {
+        const sub = `R$ ${(it.flavor.rawPrice * it.qty).toFixed(2).replace('.', ',')}`;
+        msg += `• ${it.qty}x ${it.flavor.name} (${sub})\n`;
+      });
+      msg += `\n💰 *Total Estimado:* ${totalFormatado}\n`;
+      msg += `👤 *Cliente:* ${nomeCliente}\n`;
+      msg += `📞 *WhatsApp:* ${telefoneCliente}\n`;
+      msg += `🛵 *Modalidade:* ${tipoEntrega === 'retirada' ? 'Retirada no local' : 'Entrega em domicílio'}\n`;
+      if (tipoEntrega === 'entrega') {
+        msg += `📍 *Endereço:* ${enderecoFormatado}\n`;
+      }
+      if (obs) {
+        msg += `📝 *Observações:* ${obs}\n`;
+      }
+      msg += `\n_Pedido gerado na sacola do site. Aguardo confirmação!_ 🍫`;
+
+      // Limpa sacola e fecha modal
+      BrownieCart.clear();
+      fecharModal('cartModal');
+      showToast(`Pedido ${codigoPedido} gerado com sucesso! Abrindo WhatsApp... 🤎`, 'success');
+
       const waUrl = `https://wa.me/5569993844237?text=${encodeURIComponent(msg)}`;
       window.open(waUrl, '_blank', 'noopener');
     });
@@ -432,7 +939,9 @@
       container.innerHTML = '';
       pedidos.forEach(p => {
         const dataFormatada = new Date(p.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-        const item = p.itens?.[0] || {};
+        const itens = Array.isArray(p.itens) ? p.itens : [];
+        const itensTexto = itens.map(i => `${i.quantidade || 1}x ${i.sabor || 'Brownie'}`).join(', ');
+
         const card = document.createElement('div');
         card.className = 'order-history-card';
         card.innerHTML = `
@@ -440,7 +949,7 @@
             <span class="order-history-code">${p.codigo_pedido || 'Pedido'}</span>
             <span class="order-badge ${p.status || 'pendente'}">${p.status || 'pendente'}</span>
           </div>
-          <div style="font-size:0.95rem; font-weight:700;">${item.quantidade || 1}x ${item.sabor || 'Brownie'}</div>
+          <div style="font-size:0.95rem; font-weight:700;">${itensTexto || '1x Brownie'}</div>
           <div style="font-size:0.85rem; color:var(--chocolate-light);">${dataFormatada} • R$ ${Number(p.valor_total).toFixed(2).replace('.', ',')}</div>
           <div style="font-size:0.8rem; color:var(--chocolate-dark);">${p.tipo_entrega === 'retirada' ? 'Retirada no local' : 'Entrega: ' + (p.endereco_entrega || '')}</div>
         `;
@@ -495,15 +1004,20 @@
           estrelas: selectedRating,
           comentario
         });
-        alert('Muito obrigado! Sua avaliação foi publicada com carinho 🤎');
+        showToast('Muito obrigado! Sua avaliação foi publicada com carinho 🤎', 'success');
         formReview.reset();
         fecharModal('reviewModal');
       } catch (err) {
-        alert('Erro ao enviar avaliação: ' + (err.message || 'Verifique a conexão com o Supabase.'));
+        showToast(err.message || 'Erro ao enviar avaliação.', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
       }
     });
   }
+
+  // Inicializa Carrinho e Onboarding de Novo Cliente
+  BrownieCart.init();
+  setTimeout(setupWelcomeOnboarding, 500);
+
 })();

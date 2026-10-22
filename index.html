@@ -17,6 +17,17 @@
 </head>
 <body>
 
+<!-- ===================== BARRA DE BOAS-VINDAS (CLIENTE NOVO) ===================== -->
+<div class="top-welcome-bar" id="topWelcomeBar">
+  <div class="wrap top-welcome-inner">
+    <span>🎁 <strong>Primeira vez por aqui?</strong> Cadastre-se em 30 segundos para salvar seu endereço e agilizar seus brownies fresquinhos!</span>
+    <div class="top-welcome-actions">
+      <button class="btn-welcome-cta" id="btnTopBarRegister">Cadastrar agora 🤎</button>
+      <button class="btn-welcome-dismiss" id="btnDismissTopBar" aria-label="Fechar aviso">&times;</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== NAV ===================== -->
 <header class="site-nav">
   <div class="nav-inner">
@@ -289,6 +300,14 @@
               <input type="password" id="regPassword" class="form-input" placeholder="Mínimo 6 dígitos" minlength="6" required>
             </div>
           </div>
+          <div class="form-group">
+            <label class="form-label" for="regCep">CEP (Busca automática de endereço)</label>
+            <div class="cep-input-wrap">
+              <input type="text" id="regCep" class="form-input" placeholder="76800-000" maxlength="9">
+              <button type="button" id="btnBuscarCepReg" class="btn-cep">Buscar CEP</button>
+            </div>
+            <span id="regCepStatus" class="form-note">Digite seu CEP para preencher a rua e o bairro sozinhos.</span>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="regAddress">Endereço (Rua / Av.)</label>
@@ -448,6 +467,161 @@
     </div>
     <div id="ordersListContainer" class="orders-list">
       <p style="text-align:center; color:var(--chocolate-light);">Carregando pedidos...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BARRA FLUTUANTE DA SACOLA (MULTISSABORES) ===================== -->
+<div class="floating-cart-bar" id="floatingCartBar" aria-hidden="true">
+  <div class="floating-cart-info">
+    <div class="cart-icon-badge">🛍️ <span id="floatingCartCount">0</span></div>
+    <div>
+      <div class="floating-cart-label">Sua Sacola</div>
+      <div class="floating-cart-total" id="floatingCartTotal">R$ 0,00</div>
+    </div>
+  </div>
+  <button class="btn-cart-open" id="btnOpenCartModal">
+    Ver Sacola & Finalizar ›
+  </button>
+</div>
+
+<!-- ===================== MODAL DA SACOLA / CARRINHO MULTISSABORES ===================== -->
+<div class="modal-overlay" id="cartModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div class="modal-header">
+      <h3>Sua Sacola de Brownies 🛍️</h3>
+      <p>Revise seus sabores e finalize seu pedido com a Malu.</p>
+    </div>
+
+    <!-- Lista de Itens no Carrinho -->
+    <div id="cartItemsList" class="cart-items-list">
+      <!-- Inserido dinamicamente via JS -->
+    </div>
+
+    <!-- Seletor de Tipo de Entrega e Dados -->
+    <div class="cart-delivery-section" style="margin-top:14px;">
+      <div class="form-group">
+        <label class="form-label" for="cartDeliveryType">Modalidade de Recebimento</label>
+        <select id="cartDeliveryType" class="form-select">
+          <option value="entrega">Entrega em domicílio (Porto Velho)</option>
+          <option value="retirada">Retirada combinada</option>
+        </select>
+      </div>
+
+      <div id="cartDeliveryFields">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cartCustomerName">Seu Nome</label>
+            <input type="text" id="cartCustomerName" class="form-input" placeholder="Como a Malu pode te chamar?" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cartCustomerPhone">WhatsApp</label>
+            <input type="tel" id="cartCustomerPhone" class="form-input" placeholder="(69) 99999-9999" required>
+          </div>
+        </div>
+
+        <div class="form-group" id="cartCepGroup">
+          <label class="form-label" for="cartCep">CEP (Busca automática de endereço)</label>
+          <div class="cep-input-wrap">
+            <input type="text" id="cartCep" class="form-input" placeholder="76800-000" maxlength="9">
+            <button type="button" id="btnBuscarCepCart" class="btn-cep">Buscar CEP</button>
+          </div>
+          <span id="cartCepStatus" class="form-note">Preenche a rua e o bairro sozinhos.</span>
+        </div>
+
+        <div class="form-row" id="cartAddressGroup">
+          <div class="form-group" style="flex:2;">
+            <label class="form-label" for="cartAddress">Endereço (Rua / Av.)</label>
+            <input type="text" id="cartAddress" class="form-input" placeholder="Ex: Av. Jorge Teixeira">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label" for="cartNumber">Número</label>
+            <input type="text" id="cartNumber" class="form-input" placeholder="123">
+          </div>
+        </div>
+
+        <div class="form-row" id="cartBairroGroup">
+          <div class="form-group">
+            <label class="form-label" for="cartNeighborhood">Bairro (Porto Velho)</label>
+            <input type="text" id="cartNeighborhood" class="form-input" placeholder="Ex: Embratel">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cartRef">Ponto de Referência</label>
+            <input type="text" id="cartRef" class="form-input" placeholder="Ex: Próximo à praça">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cartNotes">Observações para a Malu (opcional)</label>
+        <textarea id="cartNotes" class="form-textarea" rows="2" placeholder="Ex: Embalar para presente, mandar guardanapo extra..."></textarea>
+      </div>
+
+      <!-- Resumo Financeiro -->
+      <div class="cart-summary-box">
+        <div class="cart-summary-row">
+          <span>Subtotal dos brownies:</span>
+          <span id="cartSubtotal" style="font-weight:700;">R$ 0,00</span>
+        </div>
+        <div class="cart-summary-row total">
+          <span>Total Estimado:</span>
+          <span id="cartFinalTotal" style="font-family:'Baloo 2', sans-serif; font-size:1.45rem; font-weight:800; color:var(--red);">R$ 0,00</span>
+        </div>
+      </div>
+
+      <button type="button" id="btnCheckoutCart" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:14px;">
+        Confirmar Pedido & Abrir WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DE BOAS-VINDAS (CLIENTE NOVO) ===================== -->
+<div class="modal-overlay" id="welcomeModal" aria-hidden="true">
+  <div class="modal-card welcome-modal-card">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <div class="welcome-header">
+      <div class="welcome-logo-badge">
+        <img src="img/logo.png" alt="Brownie da Malu">
+      </div>
+      <h3>Bem-vindo(a) ao Brownie da Malu! 🍫</h3>
+      <p class="welcome-desc">Brownies artesanais feitos à mão com carinho em Porto Velho - RO.</p>
+    </div>
+    
+    <div class="welcome-perks">
+      <div class="welcome-perk">
+        <span>📍</span>
+        <div>
+          <strong>Entrega rápida com busca de CEP</strong>
+          <small>Seu endereço fica salvo para pedir em segundos</small>
+        </div>
+      </div>
+      <div class="welcome-perk">
+        <span>📦</span>
+        <div>
+          <strong>Memória de Pedidos & Status</strong>
+          <small>Acompanhe suas fornadas e histórico</small>
+        </div>
+      </div>
+      <div class="welcome-perk">
+        <span>🛍️</span>
+        <div>
+          <strong>Sacola Multissabores</strong>
+          <small>Misture sabores e feche tudo em um único pedido</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="welcome-actions">
+      <button class="btn btn-primary" id="btnWelcomeRegister" style="width:100%; justify-content:center;">
+        Criar meu cadastro em 30s 🤎
+      </button>
+      <div class="welcome-secondary-actions">
+        <button type="button" class="btn-link" id="btnWelcomeLogin">Já tem conta? Entrar</button>
+        <span class="sep">•</span>
+        <button type="button" class="btn-link" id="btnWelcomeDismiss">Ver cardápio primeiro</button>
+      </div>
     </div>
   </div>
 </div>
