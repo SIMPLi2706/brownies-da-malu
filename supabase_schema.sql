@@ -129,3 +129,43 @@ create policy "Qualquer visitante ou cliente pode enviar depoimento"
 -- Índices de performance
 create index if not exists idx_pedidos_user_id on public.pedidos(user_id);
 create index if not exists idx_depoimentos_aprovado on public.depoimentos(aprovado, criado_em desc);
+
+-- ========================================================
+-- 4. POLÍTICAS PARA O PAINEL DA MALU (ADMIN)
+-- ========================================================
+drop policy if exists "Painel pode ver todos os pedidos" on public.pedidos;
+create policy "Painel pode ver todos os pedidos"
+  on public.pedidos for select
+  using (true);
+
+drop policy if exists "Painel pode atualizar pedidos" on public.pedidos;
+create policy "Painel pode atualizar pedidos"
+  on public.pedidos for update
+  using (true);
+
+drop policy if exists "Painel pode deletar pedidos" on public.pedidos;
+create policy "Painel pode deletar pedidos"
+  on public.pedidos for delete
+  using (true);
+
+drop policy if exists "Painel pode ver todos os perfis" on public.perfis;
+create policy "Painel pode ver todos os perfis"
+  on public.perfis for select
+  using (true);
+
+drop policy if exists "Painel pode gerenciar depoimentos" on public.depoimentos;
+create policy "Painel pode gerenciar depoimentos"
+  on public.depoimentos for all
+  using (true);
+
+-- Habilitar Realtime para a tabela de pedidos
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables 
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'pedidos'
+  ) then
+    alter publication supabase_realtime add table public.pedidos;
+  end if;
+end;
+$$;

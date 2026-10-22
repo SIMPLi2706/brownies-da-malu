@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Malu 👩‍🍳 — Gestão de Pedidos e Vendas</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css?v=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js?v=2.2"></script>
+  <script src="js/admin.js?v=1.0" defer></script>
+</head>
+<body>
+
+  <!-- ===================== TELA DE BLOQUEIO (LOGIN GATE) ===================== -->
+  <div class="login-gate" id="loginGate">
+    <div class="login-box">
+      <img src="img/logo.png" alt="Logo Brownie da Malu" class="login-logo">
+      <h2>Área da Malu 👩‍🍳</h2>
+      <p>Digite sua senha de administradora para gerenciar os pedidos e o cardápio.</p>
+      
+      <form class="login-form" id="adminLoginForm">
+        <div class="form-group">
+          <label for="adminPass">Senha de Acesso</label>
+          <div class="password-input-wrap">
+            <input type="password" id="adminPass" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-password-btn" id="btnTogglePass" aria-label="Mostrar ou ocultar senha">👁️</button>
+          </div>
+        </div>
+
+        <label class="login-remember">
+          <input type="checkbox" id="rememberMe" checked>
+          Lembrar de mim neste aparelho
+        </label>
+
+        <button type="submit" class="btn-login-submit" id="btnLoginSubmit">Entrar no Painel 🍫</button>
+      </form>
+
+      <div class="login-note">
+        Dica: Senha padrão inicial é <strong>malu2026</strong>.<br>
+        Você pode alterar a senha a qualquer momento dentro do painel.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== APLICAÇÃO PRINCIPAL DO PAINEL ===================== -->
+  <div id="adminApp">
+    
+    <!-- TOPBAR -->
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div class="admin-brand">
+          <img src="img/logo.png" alt="Logo">
+          <div class="admin-brand-info">
+            <h1>Painel da <span>Malu</span> 👩‍🍳</h1>
+            <div class="live-indicator">
+              <span class="live-dot"></span>
+              <span id="liveStatusText">Conectado em tempo real</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-top-actions">
+          <button type="button" class="btn-header-action btn-sound-toggle active" id="btnToggleSound" title="Ativar ou desativar som de novo pedido">
+            <span id="soundIcon">🔔</span>
+            <span id="soundText">Som: Ligado</span>
+          </button>
+
+          <button type="button" class="btn-header-action" id="btnRefreshData" title="Atualizar dados agora">
+            <span>🔄</span> Atualizar
+          </button>
+
+          <button type="button" class="btn-header-action btn-new-order-manual" id="btnOpenManualOrderModal">
+            <span>➕</span> Novo Pedido
+          </button>
+
+          <a href="index.html" target="_blank" class="btn-header-action" title="Abrir loja em nova aba">
+            <span>🏪</span> Ver Loja
+          </a>
+
+          <button type="button" class="btn-header-action btn-logout" id="btnLogoutAdmin" title="Sair do painel">
+            <span>🚪</span> Sair
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- BARRA DE ABAS -->
+    <nav class="admin-nav-bar">
+      <div class="admin-nav-inner">
+        <button class="admin-tab-btn active" data-tab="pedidos">
+          📦 Pedidos
+          <span class="tab-badge" id="badgePendingOrders">0</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="metricas">
+          📊 Métricas & Vendas
+        </button>
+        <button class="admin-tab-btn" data-tab="clientes">
+          👥 Clientes
+          <span class="tab-badge" id="badgeTotalClients">0</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="cardapio">
+          🍫 Cardápio & Estoque
+        </button>
+        <button class="admin-tab-btn" data-tab="depoimentos">
+          ⭐ Depoimentos
+        </button>
+      </div>
+    </nav>
+
+    <!-- WRAPPER DO CONTEÚDO -->
+    <main class="admin-main-wrap">
+
+      <!-- ================= ABA 1: PEDIDOS ================= -->
+      <section class="admin-tab-content active" id="tabPedidos">
+        
+        <!-- CARDS DE RESUMO RÁPIDO -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-green">💰</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Faturamento Hoje</span>
+              <span class="kpi-value" id="kpiRevenueToday">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiRevenueTodaySub">0 pedidos hoje</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-orange">⏳</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Pedidos Pendentes</span>
+              <span class="kpi-value" id="kpiPendingCount">0</span>
+              <span class="kpi-sub">Aguardando preparo</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-blue">👩‍🍳</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Na Cozinha / Rota</span>
+              <span class="kpi-value" id="kpiActiveCount">0</span>
+              <span class="kpi-sub">Em preparo ou entrega</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-purple">📈</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Faturamento Total</span>
+              <span class="kpi-value" id="kpiRevenueTotal">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiTotalOrdersSub">0 pedidos no histórico</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE FILTROS E BUSCA -->
+        <div class="toolbar-card">
+          <div class="toolbar-row-top">
+            <div class="status-pills-wrap" id="statusPills">
+              <button class="status-pill active" data-status="todos">Todos (<span id="countAll">0</span>)</button>
+              <button class="status-pill" data-status="pendente">⏳ Pendentes (<span id="countPendente">0</span>)</button>
+              <button class="status-pill" data-status="preparando">👩‍🍳 Em Preparo (<span id="countPreparando">0</span>)</button>
+              <button class="status-pill" data-status="entrega">🛵 Saiu p/ Entrega (<span id="countEntrega">0</span>)</button>
+              <button class="status-pill" data-status="entregue">✅ Entregues (<span id="countEntregue">0</span>)</button>
+              <button class="status-pill" data-status="cancelado">❌ Cancelados (<span id="countCancelado">0</span>)</button>
+            </div>
+          </div>
+
+          <div class="toolbar-row-bottom">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="orderSearchInput" placeholder="Buscar por código (#BM-...), cliente, telefone ou sabor...">
+            </div>
+
+            <div class="toolbar-controls">
+              <select class="toolbar-select" id="dateFilterSelect">
+                <option value="todos">Todo o Período</option>
+                <option value="hoje" selected>Apenas Hoje</option>
+                <option value="ontem">Ontem</option>
+                <option value="7dias">Últimos 7 Dias</option>
+                <option value="mes">Este Mês</option>
+              </select>
+
+              <button class="btn-toolbar" id="btnPrintTodaySummary" title="Imprimir relatório resumido do dia">
+                🖨️ Resumo do Dia
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTAGEM DE PEDIDOS -->
+        <div class="orders-grid" id="ordersGrid">
+          <!-- Renderizado via JavaScript -->
+        </div>
+
+      </section>
+
+      <!-- ================= ABA 2: MÉTRICAS & VENDAS ================= -->
+      <section class="admin-tab-content" id="tabMetricas">
+        <div class="metrics-section">
+          
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap kpi-green">💵</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Ticket Médio</span>
+                <span class="kpi-value" id="kpiAvgTicket">R$ 0,00</span>
+                <span class="kpi-sub">Média por pedido</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap kpi-blue">📦</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Média Itens / Pedido</span>
+                <span class="kpi-value" id="kpiAvgItems">0</span>
+                <span class="kpi-sub">Unidades por compra</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap kpi-purple">🛵</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Taxa de Entregas</span>
+                <span class="kpi-value" id="kpiDeliveryRate">0%</span>
+                <span class="kpi-sub" id="kpiDeliveryRateSub">vs Retiradas</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap kpi-orange">⭐</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Avaliação Média</span>
+                <span class="kpi-value" id="kpiAvgRating">5.0</span>
+                <span class="kpi-sub" id="kpiRatingCountSub">Com base nos depoimentos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics-charts-grid">
+            <!-- Ranking de Sabores -->
+            <div class="metric-panel">
+              <h3>🏆 Sabores Mais Vendidos</h3>
+              <div class="flavor-rank-list" id="flavorRankList">
+                <p style="color:#888;">Carregando dados dos pedidos...</p>
+              </div>
+            </div>
+
+            <!-- Bairros Mais Atendidos -->
+            <div class="metric-panel">
+              <h3>📍 Bairros com Mais Pedidos</h3>
+              <div class="neighborhood-list" id="neighborhoodRankList">
+                <p style="color:#888;">Carregando dados de entrega...</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= ABA 3: CLIENTES ================= -->
+      <section class="admin-tab-content" id="tabClientes">
+        <div class="toolbar-card">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="clientSearchInput" placeholder="Buscar cliente por nome, telefone ou bairro...">
+          </div>
+        </div>
+
+        <div class="customers-table-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Telefone / WhatsApp</th>
+                  <th>Bairro</th>
+                  <th>Endereço Cadastrado</th>
+                  <th>Total de Pedidos</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody">
+                <!-- Renderizado via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 4: CARDÁPIO & ESTOQUE ================= -->
+      <section class="admin-tab-content" id="tabCardapio">
+        <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h2 style="font-family:'Baloo 2', sans-serif; margin:0; font-size:1.4rem;">Controle de Disponibilidade</h2>
+            <p style="margin:2px 0 0; color:var(--chocolate-light); font-size:0.9rem;">
+              Se algum sabor acabar na cozinha hoje, desative-o aqui para avisar os clientes no site.
+            </p>
+          </div>
+          <button type="button" class="btn-toolbar" id="btnResetMenuStock">
+            🔄 Restaurar Todos Disponíveis
+          </button>
+        </div>
+
+        <div class="menu-manage-grid" id="menuManageGrid">
+          <!-- Renderizado via JavaScript -->
+        </div>
+      </section>
+
+      <!-- ================= ABA 5: DEPOIMENTOS ================= -->
+      <section class="admin-tab-content" id="tabDepoimentos">
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-family:'Baloo 2', sans-serif; margin:0; font-size:1.4rem;">Moderação de Avaliações Reais</h2>
+          <p style="margin:2px 0 0; color:var(--chocolate-light); font-size:0.9rem;">
+            Aprove, oculte ou exclua as avaliações que os clientes enviam pelo site.
+          </p>
+        </div>
+
+        <div class="reviews-grid" id="reviewsManageGrid">
+          <!-- Renderizado via JavaScript -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================== MODAL MENSAGENS WHATSAPP ===================== -->
+  <div class="modal-overlay" id="waMessageModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="btnCloseWaModal">&times;</button>
+      <h3 class="modal-title">💬 Mensagens Rápidas no WhatsApp</h3>
+      <p style="font-size:0.9rem; color:var(--chocolate-light); margin-top:-10px; margin-bottom:16px;" id="waModalSubtitle">
+        Escolha uma mensagem para enviar ao cliente:
+      </p>
+
+      <div class="wa-message-options" id="waMessageOptions">
+        <!-- Gerado via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL NOVO PEDIDO MANUAL ===================== -->
+  <div class="modal-overlay" id="manualOrderModal">
+    <div class="modal-card" style="max-width:580px;">
+      <button class="modal-close-btn" id="btnCloseManualOrderModal">&times;</button>
+      <h3 class="modal-title">➕ Registrar Pedido Manual (Balcão / Telefone)</h3>
+      
+      <form id="manualOrderForm" style="display:flex; flex-direction:column; gap:14px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Nome do Cliente *</label>
+            <input type="text" id="manualCustName" required class="toolbar-select" style="width:100%;" placeholder="Ex: Ana Clara">
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Telefone / WhatsApp</label>
+            <input type="tel" id="manualCustPhone" class="toolbar-select" style="width:100%;" placeholder="(69) 9.9999-9999">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Tipo de Pedido</label>
+          <select id="manualOrderType" class="toolbar-select" style="width:100%;">
+            <option value="entrega">🛵 Entrega em Domicílio</option>
+            <option value="retirada">🛍️ Retirada no Local / Balcão</option>
+          </select>
+        </div>
+
+        <div id="manualAddressGroup">
+          <label style="font-size:0.85rem; font-weight:700;">Endereço de Entrega (Rua, Número e Bairro)</label>
+          <input type="text" id="manualAddress" class="toolbar-select" style="width:100%;" placeholder="Rua ..., Bairro ...">
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Itens do Pedido (Escolha os sabores)</label>
+          <div id="manualItemsSelectArea" style="max-height:160px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+            <!-- Itens para selecionar via JS -->
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--admin-border); padding-top:10px;">
+          <span style="font-weight:700; color:var(--chocolate);">Total do Pedido:</span>
+          <span id="manualOrderTotalDisplay" style="font-family:'Baloo 2', sans-serif; font-size:1.5rem; font-weight:800; color:var(--red);">R$ 0,00</span>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Observações</label>
+          <textarea id="manualOrderNotes" class="toolbar-select" style="width:100%; height:60px;" placeholder="Ex: Pagamento no Pix, sem troco, caprichar no recheio"></textarea>
+        </div>
+
+        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Pedido no Painel 🍫</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ÁREA OCULTA PARA IMPRESSÃO DE COMANDA TÉRMICA / A4 -->
+  <div id="printSlipArea" class="no-print"></div>
+
+  <!-- CONTAINER DE TOASTS -->
+  <div class="admin-toast-container" id="adminToastContainer"></div>
+
+</body>
+</html>

@@ -173,6 +173,17 @@
     },
 
     addItem(flavor) {
+      let stockStatus = {};
+      try {
+        const rawStock = localStorage.getItem('malu_stock_status');
+        if (rawStock) stockStatus = JSON.parse(rawStock);
+      } catch(e) {}
+
+      if (stockStatus[flavor.name] === false) {
+        showToast(`O sabor ${flavor.name} está esgotado hoje na cozinha! 👩‍🍳`, 'info');
+        return;
+      }
+
       if (!this.items[flavor.name]) {
         this.items[flavor.name] = { flavor, qty: 1 };
       } else {
@@ -290,19 +301,33 @@
   const grid = document.getElementById('flavorGrid');
   if (grid) {
     grid.innerHTML = '';
+    let stockStatus = {};
+    try {
+      const rawStock = localStorage.getItem('malu_stock_status');
+      if (rawStock) stockStatus = JSON.parse(rawStock);
+    } catch(e) {}
+
     flavors.forEach(f => {
+      const isOutOfStock = stockStatus[f.name] === false;
       const card = document.createElement('div');
-      card.className = 'flavor-card reveal';
+      card.className = `flavor-card reveal ${isOutOfStock ? 'flavor-out-of-stock' : ''}`;
       card.innerHTML = `
-        <div class="flavor-photo"><img src="${f.img}" alt="Brownie de ${f.name}" loading="lazy"></div>
+        <div class="flavor-photo" style="position:relative;">
+          <img src="${f.img}" alt="Brownie de ${f.name}" loading="lazy">
+          ${isOutOfStock ? '<span style="position:absolute; top:12px; right:12px; background:var(--red); color:#fff; font-weight:800; font-size:0.75rem; padding:4px 10px; border-radius:20px; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Esgotado hoje</span>' : ''}
+        </div>
         <div class="flavor-body">
           <h3>${f.name}</h3>
           <p>${f.desc}</p>
           <div class="flavor-foot">
             <span class="flavor-price">${f.price}</span>
             <div class="flavor-actions-group">
-              <button class="flavor-btn btn-add-cart" data-name="${f.name}">+ Sacola</button>
-              <button class="flavor-btn flavor-btn-alt btn-order-trigger" data-name="${f.name}" data-price="${f.price}" data-raw="${f.rawPrice}" data-img="${f.img}">Pedir Já</button>
+              ${isOutOfStock ? `
+                <button class="flavor-btn" disabled style="opacity:0.55; cursor:not-allowed; background:#888; color:#fff;">Esgotado</button>
+              ` : `
+                <button class="flavor-btn btn-add-cart" data-name="${f.name}">+ Sacola</button>
+                <button class="flavor-btn flavor-btn-alt btn-order-trigger" data-name="${f.name}" data-price="${f.price}" data-raw="${f.rawPrice}" data-img="${f.img}">Pedir Já</button>
+              `}
             </div>
           </div>
         </div>
