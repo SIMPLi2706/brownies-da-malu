@@ -65,9 +65,33 @@ window.BrownieApp = {
 
       if (!error && data) {
         this.currentProfile = data;
+      } else if (this.currentUser?.user_metadata) {
+        const meta = this.currentUser.user_metadata;
+        this.currentProfile = {
+          id: this.currentUser.id,
+          nome: meta.nome || '',
+          telefone: meta.telefone || '',
+          endereco: meta.endereco || '',
+          numero: meta.numero || '',
+          bairro: meta.bairro || '',
+          cidade: meta.cidade || 'Porto Velho - RO',
+          ponto_referencia: meta.ponto_referencia || ''
+        };
       }
     } catch (e) {
-      console.warn('Perfil ainda não preenchido ou erro:', e);
+      if (this.currentUser?.user_metadata) {
+        const meta = this.currentUser.user_metadata;
+        this.currentProfile = {
+          id: this.currentUser.id,
+          nome: meta.nome || '',
+          telefone: meta.telefone || '',
+          endereco: meta.endereco || '',
+          numero: meta.numero || '',
+          bairro: meta.bairro || '',
+          cidade: meta.cidade || 'Porto Velho - RO',
+          ponto_referencia: meta.ponto_referencia || ''
+        };
+      }
     }
   },
 
@@ -93,24 +117,12 @@ window.BrownieApp = {
   async cadastrarUsuario({ email, password, nome, telefone, endereco, numero, bairro, ponto_referencia }) {
     if (!supabaseClient) throw new Error('Configure o Supabase primeiro.');
 
-    // 1. Cria usuário no Auth
+    // 1. Cria usuário no Auth passando TODOS os dados nos metadados
     const { data: authData, error: authError } = await supabaseClient.auth.signUp({
       email,
       password,
       options: {
-        data: { nome, telefone }
-      }
-    });
-
-    if (authError) throw authError;
-
-    const user = authData.user;
-    if (user) {
-      // 2. Salva perfil completo na tabela 'perfis'
-      const { error: profileError } = await supabaseClient
-        .from('perfis')
-        .upsert({
-          id: user.id,
+        data: {
           nome,
           telefone,
           endereco,
@@ -118,11 +130,67 @@ window.BrownieApp = {
           bairro,
           cidade: 'Porto Velho - RO',
           ponto_referencia: ponto_referencia || ''
-        });
+        }
+      }
+    });
 
-      if (profileError) console.error('Erro ao salvar perfil:', profileError);
+    if (authError) {
+      if (authError.message.includes('already registered')) {
+        throw new Error('Este e-mail já está cadastrado! Tente entrar com sua senha.');
+      }
+      if (authError.message.includes('at least 6 characters')) {
+        throw new Error('A senha deve ter no mínimo 6 caracteres.');
+      }
+      throw authError;
     }
 
+    const user = authData?.user;
+    const session = authData?.session;
+
+    if (session) {
+      this.currentUser = user;
+    }
+
+    // 2. Tenta salvar na tabela 'perfis'
+    if (user) {
+      try {
+        await supabaseClient
+          .from('perfis')
+          .upsert({
+            id: user.id,
+            nome,
+            telefone,
+            endereco,
+            numero,
+            bairro,
+            cidade: 'Porto Velho - RO',
+            ponto_referencia: ponto_referencia || ''
+          });
+      } catch (profileError) {
+        console.warn('Perfil será sincronizado via metadata:', profileError);
+      }
+    }
+
+    // Se o Supabase estiver com confirmação de e-mail ativa e não retornou sessão:
+    if (!session) {
+      try {
+        const loginAttempt = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (loginAttempt?.data?.session) {
+          this.currentUser = loginAttempt.data.user;
+          await this.carregarPerfil();
+          this.atualizarUIAposAuth();
+          return { user: loginAttempt.data.user, session: loginAttempt.data.session, autoLogged: true };
+        }
+      } catch (loginErr) {
+        return {
+          user,
+          requiresEmailConfirmation: true
+        };
+      }
+    }
+
+    await this.carregarPerfil();
+    this.atualizarUIAposAuth();
     return authData;
   },
 
@@ -130,7 +198,18 @@ window.BrownieApp = {
   async fazerLogin(email, password) {
     if (!supabaseClient) throw new Error('Configure o Supabase primeiro.');
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('Email not confirmed')) {
+        throw new Error('E-mail ainda não confirmado. Verifique sua caixa de entrada ou desmarque a opção "Confirm email" no painel do Supabase para acesso imediato.');
+      }
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('E-mail ou senha incorretos.');
+      }
+      throw error;
+    }
+    this.currentUser = data.user;
+    await this.carregarPerfil();
+    this.atualizarUIAposAuth();
     return data;
   },
 

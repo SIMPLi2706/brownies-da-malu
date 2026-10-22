@@ -264,11 +264,16 @@
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Cadastrando...';
-        await window.BrownieApp.cadastrarUsuario(payload);
-        alert('Cadastro realizado com sucesso! Seja bem-vindo(a)! 🤎');
+        const res = await window.BrownieApp.cadastrarUsuario(payload);
+        if (res?.requiresEmailConfirmation) {
+          alert('Conta criada com sucesso! 🤎\n\nEnviamos um link de confirmação para o seu e-mail para ativar sua conta. (Dica: você também pode desativar a confirmação de e-mail no painel do Supabase para logins imediatos sem precisar de e-mail).');
+        } else {
+          alert('Cadastro realizado com sucesso! Seja bem-vindo(a)! 🤎');
+        }
+        formRegister.reset();
         fecharModal('authModal');
       } catch (err) {
-        alert('Erro ao cadastrar: ' + (err.message || 'Tente novamente.'));
+        alert('Atenção: ' + (err.message || 'Tente novamente.'));
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;

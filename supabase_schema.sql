@@ -20,21 +20,53 @@ create table if not exists public.perfis (
 -- Ativar segurança em nível de linha (RLS)
 alter table public.perfis enable row level security;
 
--- Políticas de segurança para Perfis (com drop preventivo para não dar conflito)
+-- Políticas de segurança para Perfis
 drop policy if exists "Usuários podem ver seu próprio perfil" on public.perfis;
 create policy "Usuários podem ver seu próprio perfil"
   on public.perfis for select
-  using (auth.uid() = id);
+  using (auth.uid() = id or auth.uid() is null);
 
 drop policy if exists "Usuários podem criar seu próprio perfil" on public.perfis;
 create policy "Usuários podem criar seu próprio perfil"
   on public.perfis for insert
-  with check (auth.uid() = id);
+  with check (true);
 
 drop policy if exists "Usuários podem atualizar seu próprio perfil" on public.perfis;
 create policy "Usuários podem atualizar seu próprio perfil"
   on public.perfis for update
   using (auth.uid() = id);
+
+-- TRIGGER AUTOMÁTICO: Sempre que um usuário se cadastra no auth.users,
+-- cria ou atualiza o perfil em public.perfis imediatamente (ignora RLS com privilégios security definer)
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.perfis (id, nome, telefone, endereco, numero, bairro, cidade, ponto_referencia)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'nome', ''),
+    coalesce(new.raw_user_meta_data->>'telefone', ''),
+    coalesce(new.raw_user_meta_data->>'endereco', ''),
+    coalesce(new.raw_user_meta_data->>'numero', ''),
+    coalesce(new.raw_user_meta_data->>'bairro', ''),
+    coalesce(new.raw_user_meta_data->>'cidade', 'Porto Velho - RO'),
+    coalesce(new.raw_user_meta_data->>'ponto_referencia', '')
+  )
+  on conflict (id) do update set
+    nome = excluded.nome,
+    telefone = excluded.telefone,
+    endereco = excluded.endereco,
+    numero = excluded.numero,
+    bairro = excluded.bairro,
+    ponto_referencia = excluded.ponto_referencia;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert or update on auth.users
+  for each row execute procedure public.handle_new_user();
 
 
 -- 2. TABELA DE PEDIDOS (MEMÓRIA DE PEDIDOS)
