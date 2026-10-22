@@ -461,7 +461,7 @@
       flex-basis:100%;
       border-radius:20px;
     }
-    .flavor-photo{ aspect-ratio:16/10; }
+    .flavor-photo{ aspect-ratio:1/1; max-height:290px; }
     .flavor-body{ padding:10px 16px 18px; }
     .flavor-card h3{ font-size:1.18rem; margin:0 0 4px; }
     .flavor-card p{ font-size:0.88rem; margin:0 0 14px; line-height:1.42; }
