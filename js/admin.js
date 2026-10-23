@@ -29,6 +29,19 @@
     ]
   };
 
+  // Hash criptográfico seguro (SHA-256 com salt) das credenciais da Malu
+  // Nenhum e-mail ou senha fica exposto em texto puro no código!
+  const _AUTH_SALT = 'brownie_da_malu_admin_2026_secure_salt_';
+  const _SECURE_HASH = 'd9f4f5ff00893da4f5b0b9391bf5ce0c51970e03c8108b17fa76a1feca1d3b8c';
+
+  async function computeAuthHash(email, pass) {
+    const str = _AUTH_SALT + String(email || '').trim().toLowerCase() + ':' + String(pass || '').trim();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   // ===================== AUTENTICAÇÃO E BLOQUEIO (GATE) =====================
   function initAuth() {
     const savedAuth = localStorage.getItem('malu_admin_auth') || sessionStorage.getItem('malu_admin_auth');
@@ -37,15 +50,64 @@
       document.getElementById('loginGate').classList.add('hidden');
     }
 
+    // Verifica se já há sessão ativa no Supabase
+    const sb = getSupabase();
+    if (sb) {
+      sb.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user && session.user.email?.toLowerCase().includes('marialuizada')) {
+          AdminState.authenticated = true;
+          document.getElementById('loginGate').classList.add('hidden');
+          carregarDadosCompletos();
+        }
+      }).catch(() => {});
+    }
+
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) {
-      loginForm.addEventListener('submit', (e) => {
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const pass = document.getElementById('adminPass').value.trim();
+        const emailInput = document.getElementById('adminEmail');
+        const passInput = document.getElementById('adminPass');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const pass = passInput ? passInput.value.trim() : '';
         const remember = document.getElementById('rememberMe').checked;
-        const storedCustomPass = localStorage.getItem('malu_admin_pass') || 'malu2026';
+        const submitBtn = document.getElementById('btnLoginSubmit');
 
-        if (pass === storedCustomPass || pass === 'malu2026' || pass === 'malu' || pass === 'admin123') {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verificando... ⏳';
+
+        let isAuthenticated = false;
+
+        // 1. Verificação Criptográfica com Hash Seguro SHA-256 (Zero texto puro no código)
+        try {
+          const computedHash = await computeAuthHash(email, pass);
+          if (computedHash === _SECURE_HASH) {
+            isAuthenticated = true;
+          }
+        } catch (err) {
+          console.warn('Erro ao processar hash:', err);
+        }
+
+        // 2. Autenticação direta no Supabase Auth
+        const sbClient = getSupabase();
+        if (sbClient) {
+          try {
+            const { data: authData, error: authError } = await sbClient.auth.signInWithPassword({
+              email,
+              password: pass
+            });
+            if (!authError && authData?.session) {
+              isAuthenticated = true;
+            }
+          } catch (authErr) {
+            console.warn('Tentativa Supabase auth:', authErr);
+          }
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar no Painel 🍫';
+
+        if (isAuthenticated) {
           AdminState.authenticated = true;
           if (remember) {
             localStorage.setItem('malu_admin_auth', 'true');
@@ -53,13 +115,14 @@
             sessionStorage.setItem('malu_admin_auth', 'true');
           }
           document.getElementById('loginGate').classList.add('hidden');
-          showToast('Bem-vinda ao seu painel, Malu! 👩‍🍳🤎', 'success');
+          showToast('Bem-vinda de volta, Malu! 👩‍🍳🤎', 'success');
           carregarDadosCompletos();
         } else {
-          showToast('Senha incorreta! A senha padrão é malu2026', 'error');
-          const input = document.getElementById('adminPass');
-          input.value = '';
-          input.focus();
+          showToast('E-mail ou senha de administradora incorretos.', 'error');
+          if (passInput) {
+            passInput.value = '';
+            passInput.focus();
+          }
         }
       });
     }
@@ -74,13 +137,18 @@
 
     const btnLogout = document.getElementById('btnLogoutAdmin');
     if (btnLogout) {
-      btnLogout.addEventListener('click', () => {
+      btnLogout.addEventListener('click', async () => {
         if (confirm('Deseja realmente sair do painel da Malu?')) {
           localStorage.removeItem('malu_admin_auth');
           sessionStorage.removeItem('malu_admin_auth');
           AdminState.authenticated = false;
+          const sbClient = getSupabase();
+          if (sbClient) {
+            try { await sbClient.auth.signOut(); } catch(e) {}
+          }
           document.getElementById('loginGate').classList.remove('hidden');
-          document.getElementById('adminPass').value = '';
+          const passInput = document.getElementById('adminPass');
+          if (passInput) passInput.value = '';
         }
       });
     }
