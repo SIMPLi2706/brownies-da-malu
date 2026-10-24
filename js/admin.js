@@ -1311,6 +1311,21 @@
 
   // ===================== CONTROLE DE NAVEGAÇÃO DE ABAS =====================
   function initTabNav() {
+    // Mede a altura real da barra superior fixa e atualiza a variável CSS
+    function updateTopBarHeight() {
+      const topBar = document.getElementById('adminTopBarFixed');
+      if (topBar) {
+        const h = topBar.offsetHeight;
+        if (h > 0) {
+          document.documentElement.style.setProperty('--admin-topbar-height', `${h}px`);
+        }
+      }
+    }
+    window.addEventListener('resize', updateTopBarHeight);
+    window.addEventListener('orientationchange', updateTopBarHeight);
+    setTimeout(updateTopBarHeight, 50);
+    setTimeout(updateTopBarHeight, 350);
+
     // Função de troca de aba
     function switchTab(tabTarget) {
       document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1324,6 +1339,17 @@
       document.querySelectorAll(`.admin-tab-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
       // Ativar botão na bottom nav mobile
       document.querySelectorAll(`.mobile-nav-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
+
+      // Se for uma das abas do menu 'Mais', manter o botão 'Mais' destacado na bottom nav
+      const moreTabs = ['clientes', 'cardapio', 'depoimentos'];
+      const btnMore = document.getElementById('btnOpenMobileMenu');
+      if (btnMore) {
+        btnMore.classList.toggle('active', moreTabs.includes(tabTarget));
+      }
+
+      // Rola para o topo imediatamente, evitando corte de conteúdo ou pulos
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      updateTopBarHeight();
     }
 
     // Botões da nav desktop
@@ -1349,6 +1375,51 @@
         document.getElementById('btnOpenManualOrderModal')?.click();
       });
     }
+
+    // Modal / Bottom Sheet 'Mais Opções' no celular
+    const moreModal = document.getElementById('moreOptionsModal');
+    const openMoreBtn = document.getElementById('btnOpenMobileMenu');
+    const closeMoreBtn = document.getElementById('btnCloseMoreOptionsModal');
+
+    if (openMoreBtn && moreModal) {
+      openMoreBtn.addEventListener('click', () => {
+        moreModal.classList.add('active');
+      });
+    }
+
+    if (closeMoreBtn && moreModal) {
+      closeMoreBtn.addEventListener('click', () => {
+        moreModal.classList.remove('active');
+      });
+    }
+
+    if (moreModal) {
+      moreModal.addEventListener('click', (e) => {
+        if (e.target === moreModal) {
+          moreModal.classList.remove('active');
+        }
+      });
+    }
+
+    // Opções de abas dentro do modal 'Mais Opções'
+    document.querySelectorAll('.more-opt-btn[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        switchTab(tab);
+        moreModal?.classList.remove('active');
+      });
+    });
+
+    // Atalhos especiais dentro do modal 'Mais'
+    document.getElementById('btnSheetBackup')?.addEventListener('click', () => {
+      moreModal?.classList.remove('active');
+      document.getElementById('btnExportBackup')?.click();
+    });
+
+    document.getElementById('btnSheetLogout')?.addEventListener('click', () => {
+      moreModal?.classList.remove('active');
+      document.getElementById('btnLogoutAdmin')?.click();
+    });
   }
 
   // ===================== EVENTOS DE FILTROS & BARRA DE FERRAMENTAS =====================

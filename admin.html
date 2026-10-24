@@ -55,74 +55,81 @@
   <!-- ===================== APLICAÇÃO PRINCIPAL DO PAINEL ===================== -->
   <div id="adminApp">
     
-    <!-- TOPBAR -->
-    <header class="admin-header">
-      <div class="admin-header-inner">
-        <div class="admin-brand">
-          <img src="img/logo.png" alt="Logo">
-          <div class="admin-brand-info">
-            <h1>Painel da <span>Malu</span> 👩‍🍳</h1>
-            <div class="live-indicator">
-              <span class="live-dot"></span>
-              <span id="liveStatusText">Conectado em tempo real</span>
+    <!-- ================= TOPBAR FIXA (UNIFICA HEADER E NAVEGAÇÃO SUPERIOR) ================= -->
+    <div class="admin-top-bar-fixed" id="adminTopBarFixed">
+      <header class="admin-header">
+        <div class="admin-header-inner">
+          <div class="admin-brand">
+            <img src="img/logo.png" alt="Logo Malu">
+            <div class="admin-brand-info">
+              <h1>Painel da <span>Malu</span> 👩‍🍳</h1>
+              <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span id="liveStatusText">Conectado em tempo real</span>
+              </div>
             </div>
           </div>
+
+          <div class="admin-top-actions">
+            <button type="button" class="btn-header-action btn-sound-toggle active" id="btnToggleSound" title="Ativar ou desativar som de novo pedido">
+              <span id="soundIcon">🔔</span>
+              <span id="soundText" class="btn-label-text">Som: Ligado</span>
+            </button>
+
+            <button type="button" class="btn-header-action" id="btnRefreshData" title="Atualizar dados agora">
+              <span class="refresh-spinner">🔄</span>
+              <span class="btn-label-text">Atualizar</span>
+            </button>
+
+            <button type="button" class="btn-header-action btn-desktop-action" id="btnExportBackup" title="Baixar arquivo de backup com todos os pedidos e clientes">
+              <span>💾</span>
+              <span class="btn-label-text">Baixar Backup</span>
+            </button>
+
+            <button type="button" class="btn-header-action btn-new-order-manual btn-desktop-action" id="btnOpenManualOrderModal">
+              <span>➕</span>
+              <span class="btn-label-text">Novo Pedido</span>
+            </button>
+
+            <a href="index.html" target="_blank" class="btn-header-action btn-desktop-action" title="Abrir loja em nova aba">
+              <span>🏪</span>
+              <span class="btn-label-text">Ver Loja</span>
+            </a>
+
+            <button type="button" class="btn-header-action btn-logout" id="btnLogoutAdmin" title="Sair do painel">
+              <span>🚪</span>
+              <span class="btn-label-text">Sair</span>
+            </button>
+          </div>
         </div>
+      </header>
 
-        <div class="admin-top-actions">
-          <button type="button" class="btn-header-action btn-sound-toggle active" id="btnToggleSound" title="Ativar ou desativar som de novo pedido">
-            <span id="soundIcon">🔔</span>
-            <span id="soundText">Som: Ligado</span>
+      <!-- BARRA DE ABAS (DESKTOP E TABLET) -->
+      <nav class="admin-nav-bar">
+        <div class="admin-nav-inner">
+          <button class="admin-tab-btn active" data-tab="pedidos">
+            <span>📦</span> Pedidos
+            <span class="tab-badge" id="badgePendingOrders">0</span>
           </button>
-
-          <button type="button" class="btn-header-action" id="btnRefreshData" title="Atualizar dados agora">
-            <span>🔄</span> Atualizar
+          <button class="admin-tab-btn" data-tab="metricas">
+            <span>📊</span> Métricas & Vendas
           </button>
-
-          <button type="button" class="btn-header-action" id="btnExportBackup" title="Baixar arquivo de backup com todos os pedidos e clientes">
-            <span>💾</span> Baixar Backup
+          <button class="admin-tab-btn" data-tab="custos">
+            <span>💰</span> Custos & Lucro
           </button>
-
-          <button type="button" class="btn-header-action btn-new-order-manual" id="btnOpenManualOrderModal">
-            <span>➕</span> Novo Pedido
+          <button class="admin-tab-btn" data-tab="clientes">
+            <span>👥</span> Clientes
+            <span class="tab-badge" id="badgeTotalClients">0</span>
           </button>
-
-          <a href="index.html" target="_blank" class="btn-header-action" title="Abrir loja em nova aba">
-            <span>🏪</span> Ver Loja
-          </a>
-
-          <button type="button" class="btn-header-action btn-logout" id="btnLogoutAdmin" title="Sair do painel">
-            <span>🚪</span> Sair
+          <button class="admin-tab-btn" data-tab="cardapio">
+            <span>🍫</span> Cardápio & Estoque
+          </button>
+          <button class="admin-tab-btn" data-tab="depoimentos">
+            <span>⭐</span> Depoimentos
           </button>
         </div>
-      </div>
-    </header>
-
-    <!-- BARRA DE ABAS -->
-    <nav class="admin-nav-bar">
-      <div class="admin-nav-inner">
-        <button class="admin-tab-btn active" data-tab="pedidos">
-          📦 Pedidos
-          <span class="tab-badge" id="badgePendingOrders">0</span>
-        </button>
-        <button class="admin-tab-btn" data-tab="metricas">
-          📊 Métricas & Vendas
-        </button>
-        <button class="admin-tab-btn" data-tab="custos">
-          💰 Custos & Lucro
-        </button>
-        <button class="admin-tab-btn" data-tab="clientes">
-          👥 Clientes
-          <span class="tab-badge" id="badgeTotalClients">0</span>
-        </button>
-        <button class="admin-tab-btn" data-tab="cardapio">
-          🍫 Cardápio & Estoque
-        </button>
-        <button class="admin-tab-btn" data-tab="depoimentos">
-          ⭐ Depoimentos
-        </button>
-      </div>
-    </nav>
+      </nav>
+    </div>
 
     <!-- WRAPPER DO CONTEÚDO -->
     <main class="admin-main-wrap">
@@ -563,28 +570,94 @@
 
   <!-- BOTTOM NAV MOBILE (visível apenas em celular) -->
   <nav class="mobile-bottom-nav" id="mobileBottomNav">
-    <button class="mobile-nav-btn active" data-tab="pedidos">
+    <button class="mobile-nav-btn active" data-tab="pedidos" title="Ver Pedidos">
       <span class="mobile-nav-icon">📦</span>
       <span class="mobile-nav-label">Pedidos</span>
       <span class="mobile-nav-badge hidden" id="mobileBadgePedidos">0</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="metricas">
-      <span class="mobile-nav-icon">📊</span>
-      <span class="mobile-nav-label">Métricas</span>
-    </button>
-    <button class="mobile-nav-btn mobile-nav-center-btn" id="btnOpenManualOrderMobile">
-      <span class="mobile-nav-icon">➕</span>
-      <span class="mobile-nav-label">Nova Venda</span>
-    </button>
-    <button class="mobile-nav-btn" data-tab="custos">
+    <button class="mobile-nav-btn" data-tab="custos" title="Custos e Lucro">
       <span class="mobile-nav-icon">💰</span>
       <span class="mobile-nav-label">Custos</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="clientes">
-      <span class="mobile-nav-icon">👥</span>
-      <span class="mobile-nav-label">Clientes</span>
+    <button class="mobile-nav-btn mobile-nav-center-btn" id="btnOpenManualOrderMobile" title="Registrar Nova Venda">
+      <span class="mobile-nav-icon">➕</span>
+      <span class="mobile-nav-label">Venda</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="metricas" title="Métricas e Vendas">
+      <span class="mobile-nav-icon">📊</span>
+      <span class="mobile-nav-label">Métricas</span>
+    </button>
+    <button class="mobile-nav-btn" id="btnOpenMobileMenu" title="Mais Opções">
+      <span class="mobile-nav-icon">☰</span>
+      <span class="mobile-nav-label">Mais</span>
     </button>
   </nav>
+
+  <!-- MODAL / BOTTOM SHEET "MAIS OPÇÕES" NO CELULAR -->
+  <div class="modal-overlay" id="moreOptionsModal">
+    <div class="modal-card more-options-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-header">
+        <h3 class="modal-title" style="margin:0; font-size:1.15rem;">⚙️ Mais Opções do Painel</h3>
+        <button class="modal-close-btn" id="btnCloseMoreOptionsModal">&times;</button>
+      </div>
+      <div class="more-options-grid">
+        <button type="button" class="more-opt-btn" data-tab="clientes">
+          <span class="more-opt-icon">👥</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Clientes</span>
+            <span class="more-opt-sub">Histórico de compras e dados</span>
+          </div>
+          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
+        </button>
+
+        <button type="button" class="more-opt-btn" data-tab="cardapio">
+          <span class="more-opt-icon">🍫</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Cardápio & Estoque</span>
+            <span class="more-opt-sub">Pausar ou ativar sabores</span>
+          </div>
+          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
+        </button>
+
+        <button type="button" class="more-opt-btn" data-tab="depoimentos">
+          <span class="more-opt-icon">⭐</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Depoimentos</span>
+            <span class="more-opt-sub">Gerenciar avaliações</span>
+          </div>
+          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
+        </button>
+
+        <button type="button" class="more-opt-btn" id="btnSheetBackup">
+          <span class="more-opt-icon">💾</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Baixar Backup Geral</span>
+            <span class="more-opt-sub">Salvar arquivo com todos os dados</span>
+          </div>
+          <span style="color:var(--gold-dark); font-weight:bold;">↓</span>
+        </button>
+
+        <a href="index.html" target="_blank" class="more-opt-btn" id="btnSheetViewStore">
+          <span class="more-opt-icon">🏪</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Ver Loja Online</span>
+            <span class="more-opt-sub">Abrir site do cliente</span>
+          </div>
+          <span style="color:var(--gold-dark); font-weight:bold;">↗</span>
+        </a>
+
+        <button type="button" class="more-opt-btn more-opt-danger" id="btnSheetLogout">
+          <span class="more-opt-icon">🚪</span>
+          <div class="more-opt-info">
+            <span class="more-opt-title">Sair do Painel</span>
+            <span class="more-opt-sub">Encerrar sessão com segurança</span>
+          </div>
+          <span style="color:#C62828; font-weight:bold;">✕</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===================== MODAL NOVO GASTO / DESPESA ===================== -->
   <div class="modal-overlay" id="expenseModal">

@@ -40,6 +40,11 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -213,14 +218,29 @@ input, select, textarea {
   color: #888;
 }
 
-/* ================= TOPBAR DO PAINEL ================= */
+/* ================= TOPBAR FIXA UNIFICADA (HEADER + NAV) ================= */
+:root {
+  --admin-topbar-height: 118px;
+  --admin-bottombar-height: 0px;
+}
+
+.admin-top-bar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #FFFFFF;
+  box-shadow: 0 4px 18px rgba(28, 13, 10, 0.06);
+  border-bottom: 1px solid var(--admin-border);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
 .admin-header {
   background: #FFFFFF;
   border-bottom: 1px solid var(--admin-border);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: var(--shadow-sm);
+  position: relative;
 }
 
 .admin-header-inner {
@@ -231,13 +251,13 @@ input, select, textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 .admin-brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .admin-brand img {
@@ -245,6 +265,8 @@ input, select, textarea {
   height: 44px;
   border-radius: 50%;
   border: 2px solid var(--gold);
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-brand-info h1 {
@@ -256,6 +278,7 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1.2;
 }
 
 .admin-brand-info h1 span {
@@ -272,6 +295,7 @@ input, select, textarea {
   background: var(--green-bg);
   padding: 2px 8px;
   border-radius: 12px;
+  margin-top: 2px;
 }
 
 .live-dot {
@@ -292,7 +316,7 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .btn-header-action {
@@ -306,13 +330,17 @@ input, select, textarea {
   background: var(--admin-bg);
   color: var(--chocolate-dark);
   border: 1px solid var(--admin-border);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .btn-header-action:hover {
   background: #FFF;
   border-color: var(--gold);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-sound-toggle.active {
@@ -322,14 +350,16 @@ input, select, textarea {
 }
 
 .btn-new-order-manual {
-  background: var(--red);
-  color: #FFF;
+  background: linear-gradient(135deg, var(--red), var(--red-dark));
+  color: #FFF !important;
   border-color: var(--red-dark);
+  box-shadow: 0 4px 12px rgba(229, 35, 28, 0.25);
 }
 
 .btn-new-order-manual:hover {
   background: var(--red-dark);
-  color: #FFF;
+  color: #FFF !important;
+  transform: translateY(-1px);
 }
 
 .btn-logout {
@@ -341,11 +371,22 @@ input, select, textarea {
   border-color: #EF9A9A;
 }
 
-/* ================= NAVEGAÇÃO DE ABAS ================= */
+/* Animação do botão Atualizar */
+@keyframes spinRefresh {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-header-action.rotating .refresh-spinner,
+.btn-header-action.rotating span:first-child {
+  display: inline-block;
+  animation: spinRefresh 0.6s linear infinite;
+}
+
+/* ================= NAVEGAÇÃO DE ABAS (DESKTOP) ================= */
 .admin-nav-bar {
   background: #FFFFFF;
-  border-bottom: 2px solid var(--admin-border);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  position: relative;
 }
 
 .admin-nav-inner {
@@ -353,7 +394,7 @@ input, select, textarea {
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -366,23 +407,26 @@ input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 18px;
+  padding: 12px 18px;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--chocolate-light);
   border-bottom: 3px solid transparent;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  background: transparent;
+  cursor: pointer;
 }
 
 .admin-tab-btn:hover {
   color: var(--red);
+  background: rgba(229, 35, 28, 0.03);
 }
 
 .admin-tab-btn.active {
   color: var(--red);
   border-bottom-color: var(--red);
-  background: linear-gradient(to top, rgba(229, 35, 28, 0.05), transparent);
+  background: linear-gradient(to top, rgba(229, 35, 28, 0.06), transparent);
 }
 
 .tab-badge {
@@ -403,21 +447,25 @@ input, select, textarea {
 .admin-main-wrap {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding-top: calc(var(--admin-topbar-height) + 20px);
+  padding-bottom: calc(var(--admin-bottombar-height) + 40px);
+  padding-left: 20px;
+  padding-right: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .admin-tab-content {
   display: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .admin-tab-content.active {
   display: block;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ================= CARDS DE MÉTRICAS (KPIs) ================= */
@@ -1542,28 +1590,225 @@ input, select, textarea {
   border-color: var(--red-dark);
 }
 
-/* ================= MOBILE BOTTOM NAV ================= */
+/* ================= MOBILE BOTTOM NAV & SHEETS ================= */
 .mobile-bottom-nav {
-  display: none; /* oculta em desktop */
+  display: none; /* oculta em telas maiores que 768px */
 }
 
-/* ================= RESPONSIVIDADE MOBILE COMPLETA ================= */
-@media (max-width: 768px) {
+/* ================= BOTTOM SHEET "MAIS OPÇÕES" ================= */
+.more-options-sheet {
+  max-width: 480px;
+  width: 100%;
+  border-radius: 24px 24px 0 0 !important;
+  padding: 16px 20px 24px !important;
+  background: #FFF;
+}
 
-  /* Mostrar bottom nav */
+.sheet-drag-handle {
+  width: 42px;
+  height: 5px;
+  background: #D8CCC0;
+  border-radius: 4px;
+  margin: 0 auto 14px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.more-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.more-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  text-decoration: none;
+  color: var(--chocolate-darkest);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.more-opt-btn:hover, .more-opt-btn:active {
+  background: #FFF;
+  border-color: var(--gold);
+  transform: translateX(3px);
+}
+
+.more-opt-icon {
+  font-size: 1.35rem;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--admin-border);
+}
+
+.more-opt-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.more-opt-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--chocolate-darkest);
+}
+
+.more-opt-sub {
+  font-size: 0.78rem;
+  color: var(--chocolate-light);
+  opacity: 0.8;
+}
+
+.more-opt-danger {
+  color: #C62828 !important;
+  border-color: #FFCDD2;
+  background: #FFF5F5;
+}
+
+.more-opt-danger .more-opt-title {
+  color: #C62828 !important;
+}
+
+/* ================= AJUSTES PARA TABLETS (769px a 1024px) ================= */
+@media (max-width: 1024px) and (min-width: 769px) {
+  :root {
+    --admin-topbar-height: 120px;
+  }
+
+  .admin-header-inner {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .admin-brand-info h1 {
+    font-size: 1.2rem;
+  }
+
+  .btn-header-action {
+    padding: 7px 10px;
+    font-size: 0.82rem;
+  }
+
+  .admin-tab-btn {
+    padding: 10px 14px;
+    font-size: 0.88rem;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ================= RESPONSIVIDADE MOBILE COMPLETA (<= 768px) ================= */
+@media (max-width: 768px) {
+  :root {
+    --admin-topbar-height: 58px;
+    --admin-bottombar-height: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Ocultar barra de abas superior no celular (substituída pela bottom nav) */
+  .admin-nav-bar {
+    display: none !important;
+  }
+
+  /* TOPBAR MOBILE COMPACTA E ELEGANTE */
+  .admin-header {
+    border-bottom: 1.5px solid var(--admin-border);
+  }
+
+  .admin-header-inner {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    min-height: 58px;
+  }
+
+  .admin-brand {
+    gap: 8px;
+  }
+
+  .admin-brand img {
+    width: 36px;
+    height: 36px;
+    border-width: 1.5px;
+  }
+
+  .admin-brand-info h1 {
+    font-size: 1.05rem;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .live-indicator {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+  }
+
+  /* Ocultar textos compridos dos botões no mobile para manter formato de pílulas/ícones */
+  .btn-label-text {
+    display: none !important;
+  }
+
+  .btn-desktop-action {
+    display: none !important;
+  }
+
+  .admin-top-actions {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .btn-header-action {
+    padding: 6px 9px;
+    font-size: 0.88rem;
+    border-radius: 8px;
+  }
+
+  .btn-logout {
+    padding: 6px 9px;
+  }
+
+  /* BOTTOM NAVIGATION BAR NO CELULAR (FIXA E IMÓVEL) */
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 68px;
-    background: #FFFFFF;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-top: 1.5px solid var(--admin-border);
-    box-shadow: 0 -6px 20px rgba(28, 13, 10, 0.10);
-    z-index: 2000;
+    box-shadow: 0 -4px 22px rgba(28, 13, 10, 0.08);
+    z-index: 1000;
     align-items: stretch;
-    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    overflow: visible;
   }
 
   .mobile-nav-btn {
@@ -1575,16 +1820,21 @@ input, select, textarea {
     gap: 3px;
     padding: 8px 4px 6px;
     color: var(--chocolate-light);
-    background: none;
+    background: transparent;
     border: none;
     position: relative;
-    transition: color 0.2s;
+    transition: color 0.15s ease;
     font-family: 'Quicksand', sans-serif;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-nav-btn.active {
     color: var(--red);
+  }
+
+  .mobile-nav-btn.active .mobile-nav-label {
+    font-weight: 800;
   }
 
   .mobile-nav-icon {
@@ -1594,7 +1844,7 @@ input, select, textarea {
 
   .mobile-nav-label {
     font-size: 0.65rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.2px;
   }
 
@@ -1602,28 +1852,31 @@ input, select, textarea {
     position: absolute;
     top: 4px;
     right: 50%;
-    transform: translateX(70%);
+    transform: translateX(75%);
     background: var(--red);
     color: #FFF;
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 800;
     padding: 1px 5px;
     border-radius: 10px;
-    line-height: 1.4;
+    line-height: 1.3;
+    border: 2px solid #FFF;
+    box-shadow: 0 2px 4px rgba(229, 35, 28, 0.3);
   }
 
   .mobile-nav-badge.hidden {
     display: none;
   }
 
-  /* Botão central de nova venda em destaque */
+  /* BOTÃO CENTRAL DE NOVA VENDA EM DESTAQUE */
   .mobile-nav-center-btn {
-    flex: 1.1;
+    flex: 1.15;
+    overflow: visible;
   }
 
   .mobile-nav-center-btn .mobile-nav-icon {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     background: linear-gradient(135deg, var(--red), var(--red-dark));
     color: #FFF;
     border-radius: 50%;
@@ -1633,111 +1886,68 @@ input, select, textarea {
     font-size: 1.4rem;
     box-shadow: 0 4px 14px rgba(229, 35, 28, 0.40);
     margin-top: -18px;
-    border: 3px solid #FFF;
+    border: 3.5px solid #FFF;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .mobile-nav-center-btn:active .mobile-nav-icon {
+    transform: scale(0.92);
   }
 
   .mobile-nav-center-btn .mobile-nav-label {
     color: var(--red);
     font-weight: 800;
+    margin-top: 2px;
   }
 
-  /* Espaço para a bottom nav não cobrir conteúdo */
+  /* PADDING DO CONTEÚDO PRINCIPAL NO CELULAR (NUNCA CORTA NADA) */
   .admin-main-wrap {
-    padding-bottom: 90px !important;
+    padding-top: calc(var(--admin-topbar-height) + 12px) !important;
+    padding-bottom: calc(var(--admin-bottombar-height) + 24px) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
 
-  /* Ocultar nav bar de abas (fica escondida no mobile - usa bottom nav) */
-  .admin-nav-bar {
-    display: none;
-  }
-
-  /* HEADER COMPACTO MOBILE */
-  .admin-header-inner {
-    padding: 10px 14px;
-    gap: 10px;
-    flex-wrap: nowrap;
-  }
-
-  .admin-brand img {
-    width: 36px;
-    height: 36px;
-  }
-
-  .admin-brand-info h1 {
-    font-size: 1.05rem;
-  }
-
-  .live-indicator {
-    font-size: 0.68rem;
-    padding: 1px 6px;
-  }
-
-  /* Ocultar botões menos essenciais no header mobile */
-  #btnToggleSound span:last-child,
-  #btnRefreshData span:last-child,
-  #btnExportBackup span:last-child,
-  #btnOpenManualOrderModal span:last-child {
-    display: none;
-  }
-
-  #btnToggleSound,
-  #btnRefreshData,
-  #btnExportBackup {
-    padding: 7px 10px;
-    font-size: 0.8rem;
-  }
-
-  /* Ocultar botão de pedido manual do header (agora na bottom nav) */
-  #btnOpenManualOrderModal {
-    display: none;
-  }
-
-  /* Ocultar botão Ver Loja no header mobile (economizar espaço) */
-  .admin-header-inner > .admin-top-actions > a[href="index.html"] {
-    display: none;
-  }
-
-  .admin-top-actions {
-    gap: 6px;
-    flex-wrap: nowrap;
-  }
-
-  .admin-top-actions .btn-header-action:not(.btn-logout) {
-    display: none;
-  }
-
-  .admin-top-actions .btn-logout {
-    padding: 7px 10px;
-    font-size: 0.82rem;
-  }
-
-  /* KPI CARDS EM 2 COLUNAS no mobile */
+  /* KPI CARDS EM 2 COLUNAS NO CELULAR */
   .kpi-grid {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
+    margin-bottom: 16px !important;
   }
 
   .kpi-card {
-    padding: 14px 12px !important;
+    padding: 12px 10px !important;
+    border-radius: 14px !important;
   }
 
   .kpi-icon-wrap {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 1.1rem !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1rem !important;
   }
 
   .kpi-value {
-    font-size: 1.25rem !important;
+    font-size: 1.2rem !important;
+    margin: 2px 0 !important;
   }
 
   .kpi-label {
-    font-size: 0.75rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  .kpi-sub {
+    font-size: 0.68rem !important;
   }
 
   /* TOOLBAR COMPACTA */
   .toolbar-card {
     padding: 12px !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .toolbar-row-top {
+    flex-direction: column !important;
     gap: 10px !important;
   }
 
@@ -1749,21 +1959,24 @@ input, select, textarea {
   .toolbar-controls {
     flex-wrap: wrap !important;
     gap: 6px !important;
+    width: 100% !important;
   }
 
   .toolbar-select,
   .toolbar-controls select {
     font-size: 0.82rem !important;
     padding: 8px 10px !important;
+    flex: 1 !important;
   }
 
-  /* PILLS DE STATUS EM SCROLL HORIZONTAL */
+  /* PILLS DE STATUS EM SCROLL HORIZONTAL SUAVE */
   .status-pills-wrap {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
     scrollbar-width: none;
     gap: 6px !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .status-pills-wrap::-webkit-scrollbar {
@@ -1773,10 +1986,11 @@ input, select, textarea {
   .status-pill {
     white-space: nowrap;
     font-size: 0.78rem !important;
-    padding: 6px 10px !important;
+    padding: 6px 12px !important;
+    flex-shrink: 0;
   }
 
-  /* CARDS DE PEDIDO */
+  /* CARDS DE PEDIDO NO CELULAR */
   .orders-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
@@ -1808,15 +2022,23 @@ input, select, textarea {
     padding: 6px 10px !important;
   }
 
-  /* MODAIS EM TELA CHEIA NO MOBILE */
+  /* MODAIS COMO BOTTOM SHEET NO MOBILE */
   .modal-card {
     max-width: 100% !important;
     width: 100% !important;
-    min-height: 50vh;
-    max-height: 92vh;
+    min-height: 40vh;
+    max-height: 88vh;
     border-radius: 24px 24px 0 0 !important;
     margin: auto 0 0 !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    animation: sheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  @keyframes sheetSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 
   .modal-overlay {
@@ -1828,22 +2050,7 @@ input, select, textarea {
     display: flex !important;
   }
 
-  /* TABELA DE CLIENTES HORIZONTAL */
-  .customers-table-card {
-    border-radius: 12px !important;
-  }
-
-  /* MAIN WRAPPER */
-  .admin-main-wrap {
-    padding: 16px 12px 90px !important;
-  }
-
-  /* HEADING DAS SEÇÕES */
-  .metric-panel h3 {
-    font-size: 1.05rem !important;
-  }
-
-  /* TABELA RESPONSIVA */
+  /* TABELAS RESPONSIVAS COM SCROLL SUAVE */
   .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1851,13 +2058,13 @@ input, select, textarea {
   }
 
   .admin-table {
-    min-width: 460px;
+    min-width: 440px;
     font-size: 0.82rem !important;
   }
 
   .admin-table th,
   .admin-table td {
-    padding: 10px 10px !important;
+    padding: 9px 8px !important;
   }
 
   /* GRID DE MÉTRICAS */
@@ -1867,43 +2074,47 @@ input, select, textarea {
 
   /* CUSTO TABELA */
   .cost-input-field {
-    width: 70px !important;
+    width: 65px !important;
   }
 
-  /* MENU MANAGE GRID */
+  /* CARDÁPIO MANAGE GRID */
   .menu-manage-grid {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
 
-  /* DEPOIMENTOS */
+  /* DEPOIMENTOS GRID */
   .reviews-grid {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* ================= TELAS MUITO PEQUENAS (< 380px) ================= */
-@media (max-width: 380px) {
-  .kpi-grid {
-    grid-template-columns: 1fr 1fr !important;
+/* ================= TELAS MUITO PEQUENAS (<= 360px) ================= */
+@media (max-width: 360px) {
+  .admin-brand-info h1 {
+    font-size: 0.95rem;
+  }
+
+  .live-indicator {
+    display: none;
   }
 
   .kpi-value {
-    font-size: 1.1rem !important;
-  }
-
-  .admin-brand-info h1 {
-    font-size: 0.95rem !important;
+    font-size: 1.05rem !important;
   }
 
   .mobile-bottom-nav {
-    height: 62px;
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-nav-label {
+    font-size: 0.6rem;
   }
 
   .mobile-nav-center-btn .mobile-nav-icon {
     width: 42px;
     height: 42px;
-    font-size: 1.2rem;
-    margin-top: -16px;
+    font-size: 1.25rem;
+    margin-top: -15px;
   }
 }
