@@ -323,61 +323,17 @@
     const saved = localStorage.getItem('malu_local_orders');
     if (saved) {
       try {
-        AdminState.orders = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Nunca carregar dados de demonstração antigos (IDs 1, 2 ou 3 que foram deletados)
+        const demoIds = [1, 2, 3];
+        const demoCodes = ['BM-8421', 'BM-7319', 'BM-6102'];
+        AdminState.orders = parsed.filter(o =>
+          !demoIds.includes(o.id) && !demoCodes.includes(o.codigo_pedido)
+        );
       } catch(e) {}
     }
-    if (!AdminState.orders || AdminState.orders.length === 0) {
-      // Pedidos de demonstração para a Malu testar imediatamente
-      AdminState.orders = [
-        {
-          id: 1,
-          codigo_pedido: 'BM-8421',
-          nome_cliente: 'Camila Albuquerque',
-          telefone_cliente: '(69) 99245-8812',
-          tipo_entrega: 'entrega',
-          endereco_entrega: 'Av. Calama, 2140 - Olaria, Porto Velho - RO',
-          observacoes: 'Tocar a campainha duas vezes. Pagamento no Pix!',
-          valor_total: 54.00,
-          status: 'pendente',
-          criado_em: new Date().toISOString(),
-          itens: [
-            { sabor: 'Brownie no Pote — Dois Amores', quantidade: 2, preco: 'R$ 18', subtotal: 36 },
-            { sabor: 'Brownie no Pote — Doce de Leite com Ninho', quantidade: 1, preco: 'R$ 18', subtotal: 18 }
-          ]
-        },
-        {
-          id: 2,
-          codigo_pedido: 'BM-7319',
-          nome_cliente: 'Lucas Ferreira',
-          telefone_cliente: '(69) 98114-3029',
-          tipo_entrega: 'entrega',
-          endereco_entrega: 'Rua Duque de Caxias, 850 - Centro, Porto Velho - RO',
-          observacoes: 'Enviar colher descartável por favor!',
-          valor_total: 36.00,
-          status: 'preparando',
-          criado_em: new Date(Date.now() - 3600000).toISOString(),
-          itens: [
-            { sabor: 'Brownie no Pote — Chocolate Tradicional', quantidade: 2, preco: 'R$ 18', subtotal: 36 }
-          ]
-        },
-        {
-          id: 3,
-          codigo_pedido: 'BM-6102',
-          nome_cliente: 'Juliana Mendes',
-          telefone_cliente: '(69) 99318-7744',
-          tipo_entrega: 'retirada',
-          endereco_entrega: 'Retirada combinada',
-          observacoes: 'Passo aí por volta das 17h.',
-          valor_total: 26.00,
-          status: 'entregue',
-          criado_em: new Date(Date.now() - 7200000).toISOString(),
-          itens: [
-            { sabor: 'Chocolate com Maracujá', quantidade: 1, preco: 'R$ 14', subtotal: 14 },
-            { sabor: 'Chocolate Tradicional', quantidade: 1, preco: 'R$ 12', subtotal: 12 }
-          ]
-        }
-      ];
-      localStorage.setItem('malu_local_orders', JSON.stringify(AdminState.orders));
+    if (!AdminState.orders) {
+      AdminState.orders = [];
     }
   }
 
