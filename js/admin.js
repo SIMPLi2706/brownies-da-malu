@@ -1512,31 +1512,9 @@
       }
     }
 
-    // Se estiver vazio no primeiro acesso da Malu, inicializar com exemplos reais
-    if (!AdminState.expenses || AdminState.expenses.length === 0) {
-      AdminState.expenses = [
-        {
-          id: 'exp-1',
-          descricao: 'Caixa de Leite Condensado Moça (27 un)',
-          valor: 165.00,
-          categoria: 'insumos',
-          data: new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10),
-          observacao: 'Atacadão',
-          criado_em: new Date(Date.now() - 86400000 * 2).toISOString()
-        },
-        {
-          id: 'exp-2',
-          descricao: 'Cento de Potes 250ml + Colheres descartáveis',
-          valor: 58.00,
-          categoria: 'embalagens',
-          data: new Date(Date.now() - 86400000 * 4).toISOString().slice(0, 10),
-          observacao: 'Embalagens Plastil',
-          criado_em: new Date(Date.now() - 86400000 * 4).toISOString()
-        }
-      ];
-      try {
-        localStorage.setItem('brownie_expenses', JSON.stringify(AdminState.expenses));
-      } catch (e) {}
+    // Inicializar lista vazia se não houver despesas reais
+    if (!AdminState.expenses) {
+      AdminState.expenses = [];
     }
   }
 
