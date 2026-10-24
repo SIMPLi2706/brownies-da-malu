@@ -1396,7 +1396,15 @@
       });
     }
 
-    // 6. Imprimir Resumo do Dia
+    // 6. Baixar Backup Completo em JSON
+    const exportBtn = document.getElementById('btnExportBackup');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        baixarBackupJSON();
+      });
+    }
+
+    // 7. Imprimir Resumo do Dia
     const btnPrintToday = document.getElementById('btnPrintTodaySummary');
     if (btnPrintToday) {
       btnPrintToday.addEventListener('click', () => {
@@ -1404,9 +1412,36 @@
       });
     }
 
-    // 7. Fechar modal do WhatsApp
+    // 8. Fechar modal do WhatsApp
     const closeWaBtn = document.getElementById('btnCloseWaModal');
     if (closeWaBtn) closeWaBtn.addEventListener('click', fecharModalWa);
+  }
+
+  function baixarBackupJSON() {
+    const backupData = {
+      gerado_em: new Date().toISOString(),
+      loja: 'Brownie da Malu',
+      cidade: 'Porto Velho - RO',
+      estatisticas: {
+        total_pedidos: AdminState.orders.length,
+        total_clientes: AdminState.clients.length,
+        total_depoimentos: AdminState.reviews.length
+      },
+      pedidos: AdminState.orders,
+      clientes: AdminState.clients,
+      depoimentos: AdminState.reviews
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const dateFormatted = new Date().toISOString().slice(0, 10);
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `backup_brownie_da_malu_${dateFormatted}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    showToast('Backup completo baixado com sucesso! 💾', 'success');
   }
 
   function imprimirResumoDoDia() {

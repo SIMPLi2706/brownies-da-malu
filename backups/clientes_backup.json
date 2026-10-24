@@ -1,0 +1,35 @@
+[
+  {
+    "id": "4dea18cb-5fff-4306-b9da-c7fa82b0a150",
+    "nome": "Isaac",
+    "telefone": "69974000957",
+    "endereco": "Rua principal",
+    "numero": "750",
+    "bairro": "Novo horizonte",
+    "cidade": "Porto Velho - RO",
+    "ponto_referencia": "",
+    "criado_em": "2026-10-22T03:17:39.896529+00:00"
+  },
+  {
+    "id": "8756872c-8a24-4eb0-8b8d-6c7c928d2fc5",
+    "nome": "Maria Luiza (Malu)",
+    "telefone": "",
+    "endereco": "",
+    "numero": "",
+    "bairro": "",
+    "cidade": "Porto Velho - RO",
+    "ponto_referencia": "",
+    "criado_em": "2026-10-23T01:38:36.069786+00:00"
+  },
+  {
+    "id": "f7128bec-cec4-4070-af33-e22e75124382",
+    "nome": "Evelin Camila",
+    "telefone": "69993122745",
+    "endereco": "Beco Joaquim Nabuco",
+    "numero": "477",
+    "bairro": "Santa Bárbara",
+    "cidade": "Porto Velho - RO",
+    "ponto_referencia": "Última casa da rua",
+    "criado_em": "2026-10-23T23:05:49.108126+00:00"
+  }
+]
