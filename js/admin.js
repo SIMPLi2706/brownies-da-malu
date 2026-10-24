@@ -12,7 +12,7 @@
     clients: [],
     reviews: [],
     currentStatusFilter: 'todos',
-    currentDateFilter: 'hoje',
+    currentDateFilter: 'todos',
     searchQuery: '',
     selectedOrderForWa: null,
     stockStatus: {}, // { [name]: false (esgotado) | true (disponível) }
