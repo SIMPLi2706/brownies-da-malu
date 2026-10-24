@@ -475,6 +475,13 @@
       badgePending.classList.toggle('hidden', pendingCount === 0);
     }
 
+    // Badge da bottom nav mobile (sincronizar com pedidos pendentes)
+    const mobileBadge = document.getElementById('mobileBadgePedidos');
+    if (mobileBadge) {
+      mobileBadge.textContent = pendingCount;
+      mobileBadge.classList.toggle('hidden', pendingCount === 0);
+    }
+
     const badgeClients = document.getElementById('badgeTotalClients');
     if (badgeClients) {
       badgeClients.textContent = AdminState.clients.length || AdminState.orders.length;
@@ -977,6 +984,9 @@
       const type = document.getElementById('manualOrderType').value;
       const addr = document.getElementById('manualAddress').value.trim();
       const notes = document.getElementById('manualOrderNotes').value.trim();
+      const payment = document.getElementById('manualPayment')?.value || 'pix';
+      const originRadio = form.querySelector('input[name="manualOrigin"]:checked');
+      const origin = originRadio?.value || 'whatsapp';
 
       const items = [];
       let total = 0;
@@ -1006,10 +1016,12 @@
         telefone_cliente: phone,
         tipo_entrega: type,
         endereco_entrega: type === 'entrega' ? addr : 'Retirada no Local',
-        observacoes: notes,
+        observacoes: notes ? `[Pagamento: ${payment.toUpperCase()} | Via: ${origin}] ${notes}` : `[Pagamento: ${payment.toUpperCase()} | Via: ${origin}]`,
         valor_total: total,
         itens: items,
         status: 'preparando',
+        origem: origin,
+        forma_pagamento: payment,
         criado_em: new Date().toISOString()
       };
 
@@ -1299,21 +1311,44 @@
 
   // ===================== CONTROLE DE NAVEGAÇÃO DE ABAS =====================
   function initTabNav() {
+    // Função de troca de aba
+    function switchTab(tabTarget) {
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.mobile-nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
+
+      const activeContent = document.getElementById(`tab${tabTarget.charAt(0).toUpperCase() + tabTarget.slice(1)}`);
+      if (activeContent) activeContent.classList.add('active');
+
+      // Ativar botão na nav desktop
+      document.querySelectorAll(`.admin-tab-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
+      // Ativar botão na bottom nav mobile
+      document.querySelectorAll(`.mobile-nav-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
+    }
+
+    // Botões da nav desktop
     const tabBtns = document.querySelectorAll('.admin-tab-btn');
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const tabTarget = btn.getAttribute('data-tab');
-        document.querySelectorAll('.admin-tab-content').forEach(content => {
-          content.classList.remove('active');
-        });
-
-        const activeContent = document.getElementById(`tab${tabTarget.charAt(0).toUpperCase() + tabTarget.slice(1)}`);
-        if (activeContent) activeContent.classList.add('active');
+        switchTab(btn.getAttribute('data-tab'));
       });
     });
+
+    // Botões da bottom nav mobile
+    const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn[data-tab]');
+    mobileNavBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchTab(btn.getAttribute('data-tab'));
+      });
+    });
+
+    // Botão central (+) da bottom nav abre modal de nova venda
+    const btnMobileOrder = document.getElementById('btnOpenManualOrderMobile');
+    if (btnMobileOrder) {
+      btnMobileOrder.addEventListener('click', () => {
+        document.getElementById('btnOpenManualOrderModal')?.click();
+      });
+    }
   }
 
   // ===================== EVENTOS DE FILTROS & BARRA DE FERRAMENTAS =====================

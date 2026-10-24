@@ -1509,3 +1509,401 @@ input, select, textarea {
   color: #C62828;
   font-weight: 800;
 }
+
+/* ================= RADIO BUTTONS DE ORIGEM (PEDIDO MANUAL) ================= */
+.radio-origin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.radio-origin-btn input[type="radio"] {
+  display: none;
+}
+
+.radio-origin-btn span {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid var(--admin-border);
+  background: #FFF;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--chocolate-light);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.radio-origin-btn input[type="radio"]:checked + span {
+  background: var(--red);
+  color: #FFF;
+  border-color: var(--red-dark);
+}
+
+/* ================= MOBILE BOTTOM NAV ================= */
+.mobile-bottom-nav {
+  display: none; /* oculta em desktop */
+}
+
+/* ================= RESPONSIVIDADE MOBILE COMPLETA ================= */
+@media (max-width: 768px) {
+
+  /* Mostrar bottom nav */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: #FFFFFF;
+    border-top: 1.5px solid var(--admin-border);
+    box-shadow: 0 -6px 20px rgba(28, 13, 10, 0.10);
+    z-index: 2000;
+    align-items: stretch;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px 6px;
+    color: var(--chocolate-light);
+    background: none;
+    border: none;
+    position: relative;
+    transition: color 0.2s;
+    font-family: 'Quicksand', sans-serif;
+    cursor: pointer;
+  }
+
+  .mobile-nav-btn.active {
+    color: var(--red);
+  }
+
+  .mobile-nav-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .mobile-nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(70%);
+    background: var(--red);
+    color: #FFF;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+
+  .mobile-nav-badge.hidden {
+    display: none;
+  }
+
+  /* Botão central de nova venda em destaque */
+  .mobile-nav-center-btn {
+    flex: 1.1;
+  }
+
+  .mobile-nav-center-btn .mobile-nav-icon {
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: #FFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 14px rgba(229, 35, 28, 0.40);
+    margin-top: -18px;
+    border: 3px solid #FFF;
+  }
+
+  .mobile-nav-center-btn .mobile-nav-label {
+    color: var(--red);
+    font-weight: 800;
+  }
+
+  /* Espaço para a bottom nav não cobrir conteúdo */
+  .admin-main-wrap {
+    padding-bottom: 90px !important;
+  }
+
+  /* Ocultar nav bar de abas (fica escondida no mobile - usa bottom nav) */
+  .admin-nav-bar {
+    display: none;
+  }
+
+  /* HEADER COMPACTO MOBILE */
+  .admin-header-inner {
+    padding: 10px 14px;
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+
+  .admin-brand img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .admin-brand-info h1 {
+    font-size: 1.05rem;
+  }
+
+  .live-indicator {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+  }
+
+  /* Ocultar botões menos essenciais no header mobile */
+  #btnToggleSound span:last-child,
+  #btnRefreshData span:last-child,
+  #btnExportBackup span:last-child,
+  #btnOpenManualOrderModal span:last-child {
+    display: none;
+  }
+
+  #btnToggleSound,
+  #btnRefreshData,
+  #btnExportBackup {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* Ocultar botão de pedido manual do header (agora na bottom nav) */
+  #btnOpenManualOrderModal {
+    display: none;
+  }
+
+  /* Ocultar botão Ver Loja no header mobile (economizar espaço) */
+  .admin-header-inner > .admin-top-actions > a[href="index.html"] {
+    display: none;
+  }
+
+  .admin-top-actions {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .admin-top-actions .btn-header-action:not(.btn-logout) {
+    display: none;
+  }
+
+  .admin-top-actions .btn-logout {
+    padding: 7px 10px;
+    font-size: 0.82rem;
+  }
+
+  /* KPI CARDS EM 2 COLUNAS no mobile */
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .kpi-card {
+    padding: 14px 12px !important;
+  }
+
+  .kpi-icon-wrap {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1.1rem !important;
+  }
+
+  .kpi-value {
+    font-size: 1.25rem !important;
+  }
+
+  .kpi-label {
+    font-size: 0.75rem !important;
+  }
+
+  /* TOOLBAR COMPACTA */
+  .toolbar-card {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .toolbar-row-bottom {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .toolbar-controls {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .toolbar-select,
+  .toolbar-controls select {
+    font-size: 0.82rem !important;
+    padding: 8px 10px !important;
+  }
+
+  /* PILLS DE STATUS EM SCROLL HORIZONTAL */
+  .status-pills-wrap {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    gap: 6px !important;
+  }
+
+  .status-pills-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-pill {
+    white-space: nowrap;
+    font-size: 0.78rem !important;
+    padding: 6px 10px !important;
+  }
+
+  /* CARDS DE PEDIDO */
+  .orders-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .order-card {
+    border-radius: 14px !important;
+  }
+
+  .order-card-header {
+    padding: 12px 14px !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .order-card-body {
+    padding: 12px 14px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .order-card-actions {
+    padding: 10px 14px !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .btn-status-change {
+    font-size: 0.78rem !important;
+    padding: 6px 10px !important;
+  }
+
+  /* MODAIS EM TELA CHEIA NO MOBILE */
+  .modal-card {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: 50vh;
+    max-height: 92vh;
+    border-radius: 24px 24px 0 0 !important;
+    margin: auto 0 0 !important;
+    overflow-y: auto !important;
+  }
+
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-overlay.active {
+    display: flex !important;
+  }
+
+  /* TABELA DE CLIENTES HORIZONTAL */
+  .customers-table-card {
+    border-radius: 12px !important;
+  }
+
+  /* MAIN WRAPPER */
+  .admin-main-wrap {
+    padding: 16px 12px 90px !important;
+  }
+
+  /* HEADING DAS SEÇÕES */
+  .metric-panel h3 {
+    font-size: 1.05rem !important;
+  }
+
+  /* TABELA RESPONSIVA */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  .admin-table {
+    min-width: 460px;
+    font-size: 0.82rem !important;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 10px !important;
+  }
+
+  /* GRID DE MÉTRICAS */
+  .metrics-two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* CUSTO TABELA */
+  .cost-input-field {
+    width: 70px !important;
+  }
+
+  /* MENU MANAGE GRID */
+  .menu-manage-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* DEPOIMENTOS */
+  .reviews-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ================= TELAS MUITO PEQUENAS (< 380px) ================= */
+@media (max-width: 380px) {
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .kpi-value {
+    font-size: 1.1rem !important;
+  }
+
+  .admin-brand-info h1 {
+    font-size: 0.95rem !important;
+  }
+
+  .mobile-bottom-nav {
+    height: 62px;
+  }
+
+  .mobile-nav-center-btn .mobile-nav-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    margin-top: -16px;
+  }
+}

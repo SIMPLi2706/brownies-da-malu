@@ -476,9 +476,34 @@
   <div class="modal-overlay" id="manualOrderModal">
     <div class="modal-card" style="max-width:580px;">
       <button class="modal-close-btn" id="btnCloseManualOrderModal">&times;</button>
-      <h3 class="modal-title">➕ Registrar Pedido Manual (Balcão / Telefone)</h3>
+      <h3 class="modal-title">🛒 Registrar Venda / Pedido Manual</h3>
+      <p style="font-size:0.85rem; color:var(--chocolate-light); margin:-8px 0 4px;">Para clientes que ligam, pedem no WhatsApp ou na entrega direta 🤎</p>
       
       <form id="manualOrderForm" style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Origem da venda -->
+        <div style="background:var(--cream); border-radius:10px; padding:12px; border:1px solid var(--admin-border);">
+          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:8px;">📣 Como foi feita essa venda?</label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <label class="radio-origin-btn">
+              <input type="radio" name="manualOrigin" value="whatsapp" checked>
+              <span>📱 WhatsApp</span>
+            </label>
+            <label class="radio-origin-btn">
+              <input type="radio" name="manualOrigin" value="balcao">
+              <span>🏪 Balcão / Pessoalmente</span>
+            </label>
+            <label class="radio-origin-btn">
+              <input type="radio" name="manualOrigin" value="telefone">
+              <span>📞 Telefone</span>
+            </label>
+            <label class="radio-origin-btn">
+              <input type="radio" name="manualOrigin" value="outro">
+              <span>🏷️ Outro</span>
+            </label>
+          </div>
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div>
             <label style="font-size:0.85rem; font-weight:700;">Nome do Cliente *</label>
@@ -490,40 +515,76 @@
           </div>
         </div>
 
-        <div>
-          <label style="font-size:0.85rem; font-weight:700;">Tipo de Pedido</label>
-          <select id="manualOrderType" class="toolbar-select" style="width:100%;">
-            <option value="entrega">🛵 Entrega em Domicílio</option>
-            <option value="retirada">🛍️ Retirada no Local / Balcão</option>
-          </select>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Tipo de Entrega</label>
+            <select id="manualOrderType" class="toolbar-select" style="width:100%;">
+              <option value="entrega">🛵 Entrega em Domicílio</option>
+              <option value="retirada">🛍️ Retirada no Local</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Forma de Pagamento</label>
+            <select id="manualPayment" class="toolbar-select" style="width:100%;">
+              <option value="pix">💳 Pix</option>
+              <option value="dinheiro">💵 Dinheiro</option>
+              <option value="cartao">💳 Cartão (Débito/Crédito)</option>
+              <option value="fiado">🤝 Fiado / A combinar</option>
+            </select>
+          </div>
         </div>
 
         <div id="manualAddressGroup">
-          <label style="font-size:0.85rem; font-weight:700;">Endereço de Entrega (Rua, Número e Bairro)</label>
-          <input type="text" id="manualAddress" class="toolbar-select" style="width:100%;" placeholder="Rua ..., Bairro ...">
+          <label style="font-size:0.85rem; font-weight:700;">Endereço de Entrega</label>
+          <input type="text" id="manualAddress" class="toolbar-select" style="width:100%;" placeholder="Rua ..., Número, Bairro...">
         </div>
 
         <div>
           <label style="font-size:0.85rem; font-weight:700;">Itens do Pedido (Escolha os sabores)</label>
-          <div id="manualItemsSelectArea" style="max-height:160px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+          <div id="manualItemsSelectArea" style="max-height:180px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
             <!-- Itens para selecionar via JS -->
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--admin-border); padding-top:10px;">
-          <span style="font-weight:700; color:var(--chocolate);">Total do Pedido:</span>
-          <span id="manualOrderTotalDisplay" style="font-family:'Baloo 2', sans-serif; font-size:1.5rem; font-weight:800; color:var(--red);">R$ 0,00</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); border-radius:10px; padding:12px 16px; border:2px solid var(--gold);">
+          <span style="font-weight:700; color:var(--chocolate);">💰 Total do Pedido:</span>
+          <span id="manualOrderTotalDisplay" style="font-family:'Baloo 2', sans-serif; font-size:1.7rem; font-weight:800; color:var(--red);">R$ 0,00</span>
         </div>
 
         <div>
           <label style="font-size:0.85rem; font-weight:700;">Observações</label>
-          <textarea id="manualOrderNotes" class="toolbar-select" style="width:100%; height:60px;" placeholder="Ex: Pagamento no Pix, sem troco, caprichar no recheio"></textarea>
+          <textarea id="manualOrderNotes" class="toolbar-select" style="width:100%; height:60px;" placeholder="Ex: Pago no Pix ✓, entregar após 18h, troco para R$50..."></textarea>
         </div>
 
-        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Pedido no Painel 🍫</button>
+        <button type="submit" class="btn-login-submit" style="margin-top:6px;">✅ Salvar Venda no Painel 🍫</button>
       </form>
     </div>
   </div>
+
+  <!-- BOTTOM NAV MOBILE (visível apenas em celular) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-btn active" data-tab="pedidos">
+      <span class="mobile-nav-icon">📦</span>
+      <span class="mobile-nav-label">Pedidos</span>
+      <span class="mobile-nav-badge hidden" id="mobileBadgePedidos">0</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="metricas">
+      <span class="mobile-nav-icon">📊</span>
+      <span class="mobile-nav-label">Métricas</span>
+    </button>
+    <button class="mobile-nav-btn mobile-nav-center-btn" id="btnOpenManualOrderMobile">
+      <span class="mobile-nav-icon">➕</span>
+      <span class="mobile-nav-label">Nova Venda</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="custos">
+      <span class="mobile-nav-icon">💰</span>
+      <span class="mobile-nav-label">Custos</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="clientes">
+      <span class="mobile-nav-icon">👥</span>
+      <span class="mobile-nav-label">Clientes</span>
+    </button>
+  </nav>
 
   <!-- ===================== MODAL NOVO GASTO / DESPESA ===================== -->
   <div class="modal-overlay" id="expenseModal">
