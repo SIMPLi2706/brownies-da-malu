@@ -2,16 +2,16 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel da Malu 👩‍🍳 — Gestão de Pedidos e Vendas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Painel da Malu — Gestão de Pedidos e Vendas</title>
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=1.3">
+  <link rel="stylesheet" href="css/admin.css?v=2.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=2.3"></script>
-  <script src="js/admin.js?v=1.3" defer></script>
+  <script src="js/admin.js?v=2.0" defer></script>
 </head>
 <body>
 
@@ -19,8 +19,9 @@
   <div class="login-gate" id="loginGate">
     <div class="login-box">
       <img src="img/logo.png" alt="Logo Brownie da Malu" class="login-logo">
-      <h2>Área da Malu 👩‍🍳</h2>
-      <p>Acesse com seu e-mail e senha de administradora para gerenciar a loja.</p>
+      <span class="eyebrow" style="justify-content:center; margin-bottom:8px;">gestão da confeitaria</span>
+      <h2>Área de Administração</h2>
+      <p>Acesse com seu e-mail e senha de administradora para gerenciar pedidos e vendas.</p>
       
       <form class="login-form" id="adminLoginForm">
         <div class="form-group">
@@ -34,7 +35,9 @@
           <label for="adminPass">Senha</label>
           <div class="password-input-wrap">
             <input type="password" id="adminPass" placeholder="••••••••" required autocomplete="current-password">
-            <button type="button" class="toggle-password-btn" id="btnTogglePass" aria-label="Mostrar ou ocultar senha">👁️</button>
+            <button type="button" class="toggle-password-btn" id="btnTogglePass" aria-label="Mostrar ou ocultar senha">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
           </div>
         </div>
 
@@ -43,11 +46,15 @@
           Lembrar de mim neste aparelho
         </label>
 
-        <button type="submit" class="btn-login-submit" id="btnLoginSubmit">Entrar no Painel 🍫</button>
+        <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+          <span>Entrar no Painel</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
       </form>
 
       <div class="login-note">
-        🔒 Acesso restrito protegido por criptografia e autenticação segura.
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Acesso restrito protegido por autenticação segura.</span>
       </div>
     </div>
   </div>
@@ -55,92 +62,195 @@
   <!-- ===================== APLICAÇÃO PRINCIPAL DO PAINEL ===================== -->
   <div id="adminApp">
     
-    <!-- ================= TOPBAR FIXA (UNIFICA HEADER E NAVEGAÇÃO SUPERIOR) ================= -->
-    <div class="admin-top-bar-fixed" id="adminTopBarFixed">
-      <header class="admin-header">
-        <div class="admin-header-inner">
-          <div class="admin-brand">
-            <img src="img/logo.png" alt="Logo Malu">
-            <div class="admin-brand-info">
-              <h1>Painel da <span>Malu</span> 👩‍🍳</h1>
-              <div class="live-indicator">
-                <span class="live-dot"></span>
-                <span id="liveStatusText">Conectado em tempo real</span>
-              </div>
-            </div>
+    <!-- OVERLAY ESCURO PARA SIDEBAR NO MOBILE/DESKTOP -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR DRAWER PROFISSIONAL (MENU HAMBÚRGUER) -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-header">
+        <a href="#pedidos" class="sidebar-brand">
+          <img src="img/logo.png" alt="Logo Malu">
+          <div class="sidebar-brand-text">
+            <span class="brand-name">Brownie <span>da Malu</span></span>
+            <span class="sidebar-sub">Painel de Gestão</span>
           </div>
+        </a>
+        <button type="button" class="sidebar-close-btn" id="btnCloseSidebar" aria-label="Fechar menu lateral">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
 
-          <div class="admin-top-actions">
-            <button type="button" class="btn-header-action btn-sound-toggle active" id="btnToggleSound" title="Ativar ou desativar som de novo pedido">
-              <span id="soundIcon">🔔</span>
-              <span id="soundText" class="btn-label-text">Som: Ligado</span>
-            </button>
-
-            <button type="button" class="btn-header-action" id="btnRefreshData" title="Atualizar dados agora">
-              <span class="refresh-spinner">🔄</span>
-              <span class="btn-label-text">Atualizar</span>
-            </button>
-
-            <button type="button" class="btn-header-action btn-desktop-action" id="btnExportBackup" title="Baixar arquivo de backup com todos os pedidos e clientes">
-              <span>💾</span>
-              <span class="btn-label-text">Baixar Backup</span>
-            </button>
-
-            <button type="button" class="btn-header-action btn-new-order-manual btn-desktop-action" id="btnOpenManualOrderModal">
-              <span>➕</span>
-              <span class="btn-label-text">Novo Pedido</span>
-            </button>
-
-            <a href="index.html" target="_blank" class="btn-header-action btn-desktop-action" title="Abrir loja em nova aba">
-              <span>🏪</span>
-              <span class="btn-label-text">Ver Loja</span>
-            </a>
-
-            <button type="button" class="btn-header-action btn-logout" id="btnLogoutAdmin" title="Sair do painel">
-              <span>🚪</span>
-              <span class="btn-label-text">Sair</span>
-            </button>
-          </div>
+      <div class="sidebar-live-card">
+        <span class="live-dot"></span>
+        <div class="sidebar-live-info">
+          <span class="sidebar-live-title">Status da Conexão</span>
+          <span class="sidebar-live-sub" id="liveStatusText">Conectado em tempo real</span>
         </div>
-      </header>
+      </div>
 
-      <!-- BARRA DE ABAS (DESKTOP E TABLET) -->
-      <nav class="admin-nav-bar">
-        <div class="admin-nav-inner">
-          <button class="admin-tab-btn active" data-tab="pedidos">
-            <span>📦</span> Pedidos
-            <span class="tab-badge" id="badgePendingOrders">0</span>
-          </button>
-          <button class="admin-tab-btn" data-tab="metricas">
-            <span>📊</span> Métricas & Vendas
-          </button>
-          <button class="admin-tab-btn" data-tab="custos">
-            <span>💰</span> Custos & Lucro
-          </button>
-          <button class="admin-tab-btn" data-tab="clientes">
-            <span>👥</span> Clientes
-            <span class="tab-badge" id="badgeTotalClients">0</span>
-          </button>
-          <button class="admin-tab-btn" data-tab="cardapio">
-            <span>🍫</span> Cardápio & Estoque
-          </button>
-          <button class="admin-tab-btn" data-tab="depoimentos">
-            <span>⭐</span> Depoimentos
-          </button>
-        </div>
-      </nav>
-    </div>
-
-    <!-- WRAPPER DO CONTEÚDO -->
-    <main class="admin-main-wrap">
-
-      <!-- ================= ABA 1: PEDIDOS ================= -->
-      <section class="admin-tab-content active" id="tabPedidos">
+      <div class="sidebar-nav-section">
+        <span class="sidebar-section-label">PÁGINAS DO PAINEL</span>
         
-        <!-- CARDS DE RESUMO RÁPIDO -->
+        <nav class="sidebar-nav">
+          <a href="#pedidos" class="sidebar-link active" data-page="pedidos">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </span>
+            <span class="sidebar-label">Pedidos</span>
+            <span class="sidebar-badge" id="badgePendingOrders">0</span>
+          </a>
+
+          <a href="#metricas" class="sidebar-link" data-page="metricas">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            </span>
+            <span class="sidebar-label">Métricas & Vendas</span>
+          </a>
+
+          <a href="#custos" class="sidebar-link" data-page="custos">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            </span>
+            <span class="sidebar-label">Custos & Lucro</span>
+          </a>
+
+          <a href="#clientes" class="sidebar-link" data-page="clientes">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span class="sidebar-label">Clientes</span>
+            <span class="sidebar-badge-neutral" id="badgeTotalClients">0</span>
+          </a>
+
+          <a href="#cardapio" class="sidebar-link" data-page="cardapio">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg>
+            </span>
+            <span class="sidebar-label">Cardápio & Estoque</span>
+          </a>
+
+          <a href="#depoimentos" class="sidebar-link" data-page="depoimentos">
+            <span class="sidebar-icon">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </span>
+            <span class="sidebar-label">Depoimentos</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-nav-section">
+        <span class="sidebar-section-label">AÇÕES RÁPIDAS</span>
+        
+        <button type="button" class="sidebar-action-btn" id="sidebarNewOrderBtn">
+          <span class="sidebar-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </span>
+          <span>Registrar Venda Manual</span>
+        </button>
+
+        <button type="button" class="sidebar-action-btn" id="sidebarBackupBtn">
+          <span class="sidebar-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          <span>Baixar Backup Geral</span>
+        </button>
+
+        <a href="index.html" target="_blank" class="sidebar-action-btn">
+          <span class="sidebar-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </span>
+          <span>Ver Loja Online</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <button type="button" class="sidebar-logout-btn" id="sidebarLogoutBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sair do Painel</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- TOPBAR FIXA (IDÊNTICA À NAVEGAÇÃO DO SITE: CHOCOLATE DARK + DASHED RED) -->
+    <header class="admin-topbar">
+      <div class="admin-topbar-inner">
+        
+        <div class="topbar-left">
+          <button type="button" class="admin-burger-btn" id="adminBurgerBtn" aria-label="Abrir menu de páginas" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <a href="#pedidos" class="admin-brand">
+            <img src="img/logo.png" alt="Logo Brownie da Malu">
+            <span class="brand-name">Brownie <span>da Malu</span></span>
+            <span class="admin-badge">Painel</span>
+          </a>
+
+          <div class="topbar-page-breadcrumb">
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="topActivePageTitle">Pedidos</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="btn-topbar-icon btn-sound-toggle active" id="btnToggleSound" title="Ativar ou desativar som de novos pedidos">
+            <span id="soundIconWrap">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </span>
+            <span class="btn-text-desktop">Som</span>
+          </button>
+
+          <button type="button" class="btn-topbar-icon" id="btnRefreshData" title="Atualizar dados agora">
+            <span class="refresh-spinner-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+            </span>
+            <span class="btn-text-desktop">Atualizar</span>
+          </button>
+
+          <button type="button" class="btn-topbar-cta" id="btnOpenManualOrderModal" title="Registrar nova venda manual">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span class="btn-cta-label">Nova Venda</span>
+          </button>
+
+          <button type="button" class="btn-topbar-icon btn-logout" id="btnLogoutAdmin" title="Sair do painel">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="btn-text-desktop">Sair</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL (PÁGINAS INDIVIDUAIS) -->
+    <main class="admin-main">
+
+      <!-- ================= PÁGINA 1: PEDIDOS ================= -->
+      <section class="admin-page-view active" id="viewPedidos" data-page="pedidos">
+        
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">painel da malu</span>
+            <h2>Gestão de Pedidos em Tempo Real</h2>
+            <p class="page-subtitle">Acompanhe novos pedidos feitos no site ou balcão, atualize status e imprima comandas.</p>
+          </div>
+          <div class="page-head-actions">
+            <button type="button" class="btn-head-action" id="btnPrintTodaySummary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+              <span>Resumo do Dia</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CARDS DE RESUMO RÁPIDO (KPIS) -->
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-green">💰</div>
+            <div class="kpi-icon-wrap kpi-green">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Faturamento Hoje</span>
               <span class="kpi-value" id="kpiRevenueToday">R$ 0,00</span>
@@ -149,7 +259,9 @@
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-orange">⏳</div>
+            <div class="kpi-icon-wrap kpi-orange">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Pedidos Pendentes</span>
               <span class="kpi-value" id="kpiPendingCount">0</span>
@@ -158,16 +270,20 @@
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-blue">👩‍🍳</div>
+            <div class="kpi-icon-wrap kpi-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            </div>
             <div class="kpi-info">
-              <span class="kpi-label">Na Cozinha / Rota</span>
+              <span class="kpi-label">Em Produção / Rota</span>
               <span class="kpi-value" id="kpiActiveCount">0</span>
-              <span class="kpi-sub">Em preparo ou entrega</span>
+              <span class="kpi-sub">Na cozinha ou entrega</span>
             </div>
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-purple">📈</div>
+            <div class="kpi-icon-wrap kpi-purple">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Faturamento Total</span>
               <span class="kpi-value" id="kpiRevenueTotal">R$ 0,00</span>
@@ -180,18 +296,41 @@
         <div class="toolbar-card">
           <div class="toolbar-row-top">
             <div class="status-pills-wrap" id="statusPills">
-              <button class="status-pill active" data-status="todos">Todos (<span id="countAll">0</span>)</button>
-              <button class="status-pill" data-status="pendente">⏳ Pendentes (<span id="countPendente">0</span>)</button>
-              <button class="status-pill" data-status="preparando">👩‍🍳 Em Preparo (<span id="countPreparando">0</span>)</button>
-              <button class="status-pill" data-status="entrega">🛵 Saiu p/ Entrega (<span id="countEntrega">0</span>)</button>
-              <button class="status-pill" data-status="entregue">✅ Entregues (<span id="countEntregue">0</span>)</button>
-              <button class="status-pill" data-status="cancelado">❌ Cancelados (<span id="countCancelado">0</span>)</button>
+              <button class="status-pill active" data-status="todos">
+                <span>Todos</span>
+                <span class="pill-count" id="countAll">0</span>
+              </button>
+              <button class="status-pill" data-status="pendente">
+                <span class="pill-dot dot-orange"></span>
+                <span>Pendentes</span>
+                <span class="pill-count" id="countPendente">0</span>
+              </button>
+              <button class="status-pill" data-status="preparando">
+                <span class="pill-dot dot-blue"></span>
+                <span>Em Preparo</span>
+                <span class="pill-count" id="countPreparando">0</span>
+              </button>
+              <button class="status-pill" data-status="entrega">
+                <span class="pill-dot dot-orange"></span>
+                <span>Saiu p/ Entrega</span>
+                <span class="pill-count" id="countEntrega">0</span>
+              </button>
+              <button class="status-pill" data-status="entregue">
+                <span class="pill-dot dot-green"></span>
+                <span>Entregues</span>
+                <span class="pill-count" id="countEntregue">0</span>
+              </button>
+              <button class="status-pill" data-status="cancelado">
+                <span class="pill-dot dot-gray"></span>
+                <span>Cancelados</span>
+                <span class="pill-count" id="countCancelado">0</span>
+              </button>
             </div>
           </div>
 
           <div class="toolbar-row-bottom">
             <div class="search-input-wrap">
-              <span class="search-icon">🔍</span>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" id="orderSearchInput" placeholder="Buscar por código (#BM-...), cliente, telefone ou sabor...">
             </div>
 
@@ -203,100 +342,132 @@
                 <option value="7dias">Últimos 7 Dias</option>
                 <option value="mes">Este Mês</option>
               </select>
-
-              <button class="btn-toolbar" id="btnPrintTodaySummary" title="Imprimir relatório resumido do dia">
-                🖨️ Resumo do Dia
-              </button>
             </div>
           </div>
         </div>
 
-        <!-- LISTAGEM DE PEDIDOS -->
+        <!-- LISTAGEM DE PEDIDOS EM CARDS RESPONSIVOS -->
         <div class="orders-grid" id="ordersGrid">
           <!-- Renderizado via JavaScript -->
         </div>
 
       </section>
 
-      <!-- ================= ABA 2: MÉTRICAS & VENDAS ================= -->
-      <section class="admin-tab-content" id="tabMetricas">
-        <div class="metrics-section">
-          
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-icon-wrap kpi-green">💵</div>
-              <div class="kpi-info">
-                <span class="kpi-label">Ticket Médio</span>
-                <span class="kpi-value" id="kpiAvgTicket">R$ 0,00</span>
-                <span class="kpi-sub">Média por pedido</span>
-              </div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-icon-wrap kpi-blue">📦</div>
-              <div class="kpi-info">
-                <span class="kpi-label">Média Itens / Pedido</span>
-                <span class="kpi-value" id="kpiAvgItems">0</span>
-                <span class="kpi-sub">Unidades por compra</span>
-              </div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-icon-wrap kpi-purple">🛵</div>
-              <div class="kpi-info">
-                <span class="kpi-label">Taxa de Entregas</span>
-                <span class="kpi-value" id="kpiDeliveryRate">0%</span>
-                <span class="kpi-sub" id="kpiDeliveryRateSub">vs Retiradas</span>
-              </div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-icon-wrap kpi-orange">⭐</div>
-              <div class="kpi-info">
-                <span class="kpi-label">Avaliação Média</span>
-                <span class="kpi-value" id="kpiAvgRating">5.0</span>
-                <span class="kpi-sub" id="kpiRatingCountSub">Com base nos depoimentos</span>
-              </div>
-            </div>
+      <!-- ================= PÁGINA 2: MÉTRICAS & VENDAS ================= -->
+      <section class="admin-page-view" id="viewMetricas" data-page="metricas">
+        
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">análise comercial</span>
+            <h2>Métricas & Desempenho de Vendas</h2>
+            <p class="page-subtitle">Indicadores de ticket médio, sabores preferidos e raio de entregas.</p>
           </div>
-
-          <div class="metrics-charts-grid">
-            <!-- Ranking de Sabores -->
-            <div class="metric-panel">
-              <h3>🏆 Sabores Mais Vendidos</h3>
-              <div class="flavor-rank-list" id="flavorRankList">
-                <p style="color:#888;">Carregando dados dos pedidos...</p>
-              </div>
-            </div>
-
-            <!-- Bairros Mais Atendidos -->
-            <div class="metric-panel">
-              <h3>📍 Bairros com Mais Pedidos</h3>
-              <div class="neighborhood-list" id="neighborhoodRankList">
-                <p style="color:#888;">Carregando dados de entrega...</p>
-              </div>
-            </div>
+          <div class="page-head-actions">
+            <button type="button" class="btn-head-action outline" id="btnExportBackup">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Exportar Backup (JSON)</span>
+            </button>
           </div>
-
         </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-green">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Ticket Médio</span>
+              <span class="kpi-value" id="kpiAvgTicket">R$ 0,00</span>
+              <span class="kpi-sub">Média por pedido</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Média Itens / Pedido</span>
+              <span class="kpi-value" id="kpiAvgItems">0</span>
+              <span class="kpi-sub">Unidades por compra</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-purple">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="17 8 21 8 23 11 23 16 17 16 17 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Taxa de Entregas</span>
+              <span class="kpi-value" id="kpiDeliveryRate">0%</span>
+              <span class="kpi-sub" id="kpiDeliveryRateSub">vs Retiradas</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-orange">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Avaliação Média</span>
+              <span class="kpi-value" id="kpiAvgRating">5.0</span>
+              <span class="kpi-sub" id="kpiRatingCountSub">Com base nos depoimentos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-charts-grid">
+          <div class="metric-panel">
+            <h3>Sabores Mais Vendidos</h3>
+            <div class="flavor-rank-list" id="flavorRankList">
+              <p style="color:var(--chocolate-light);">Carregando dados dos pedidos...</p>
+            </div>
+          </div>
+
+          <div class="metric-panel">
+            <h3>Bairros com Mais Pedidos</h3>
+            <div class="neighborhood-list" id="neighborhoodRankList">
+              <p style="color:var(--chocolate-light);">Carregando dados de entrega...</p>
+            </div>
+          </div>
+        </div>
+
       </section>
 
-      <!-- ================= ABA CUSTOS & LUCRO LÍQUIDO ================= -->
-      <section class="admin-tab-content" id="tabCustos">
+      <!-- ================= PÁGINA 3: CUSTOS & LUCRO LÍQUIDO ================= -->
+      <section class="admin-page-view" id="viewCustos" data-page="custos">
         
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">gestão financeira</span>
+            <h2>Custos, Despesas & Lucro Líquido Real</h2>
+            <p class="page-subtitle">Acompanhe a lucratividade limpa das vendas subtraindo o custo dos insumos e despesas operacionais.</p>
+          </div>
+          <div class="page-head-actions">
+            <button type="button" class="btn-topbar-cta" id="btnOpenExpenseModal">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Lançar Nova Despesa</span>
+            </button>
+          </div>
+        </div>
+
         <!-- RESUMO FINANCEIRO (FATURAMENTO, CUSTOS, LUCRO LÍQUIDO) -->
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-blue">💵</div>
+            <div class="kpi-icon-wrap kpi-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Faturamento Bruto</span>
               <span class="kpi-value" id="kpiCustosRevenue">R$ 0,00</span>
-              <span class="kpi-sub" id="kpiCustosRevenueSub">Total das vendas</span>
+              <span class="kpi-sub" id="kpiCustosRevenueSub">Total de vendas válidas</span>
             </div>
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-orange">📉</div>
+            <div class="kpi-icon-wrap kpi-orange">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Custos & Despesas</span>
               <span class="kpi-value" id="kpiCustosTotal">R$ 0,00</span>
@@ -304,17 +475,21 @@
             </div>
           </div>
 
-          <div class="kpi-card" style="border: 2px solid #2E7D32; background: linear-gradient(135deg, #FFFFFF, #F1F8E9);">
-            <div class="kpi-icon-wrap kpi-green">✨</div>
+          <div class="kpi-card kpi-card-highlight">
+            <div class="kpi-icon-wrap kpi-green">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
             <div class="kpi-info">
-              <span class="kpi-label" style="color: #2E7D32; font-weight:800;">Lucro Líquido Real</span>
-              <span class="kpi-value" id="kpiNetProfit" style="color: #2E7D32;">R$ 0,00</span>
-              <span class="kpi-sub" id="kpiNetProfitSub">Limpo no seu bolso 🤎</span>
+              <span class="kpi-label" style="color:var(--green); font-weight:800;">Lucro Líquido Real</span>
+              <span class="kpi-value" id="kpiNetProfit" style="color:var(--green);">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiNetProfitSub">Resultado líquido apurado</span>
             </div>
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-purple">📊</div>
+            <div class="kpi-icon-wrap kpi-purple">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+            </div>
             <div class="kpi-info">
               <span class="kpi-label">Margem Líquida</span>
               <span class="kpi-value" id="kpiNetMargin">0%</span>
@@ -323,27 +498,28 @@
           </div>
         </div>
 
-        <!-- DOIS BLOCOS: 1. FICHA TÉCNICA (CUSTO POR SABOR) / 2. DESPESAS -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <!-- DOIS BLOCOS: FICHA TÉCNICA E DESPESAS OPERACIONAIS -->
+        <div class="costs-split-grid">
           
           <!-- FICHA DE CUSTO POR SABOR -->
-          <div class="metric-panel" style="padding: 22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+          <div class="metric-panel">
+            <div class="panel-header-row">
               <div>
-                <h3 style="margin:0; font-size:1.25rem;">🧁 Custo Unitário por Sabor (Ficha Técnica)</h3>
-                <small style="color:var(--chocolate-light);">Defina quanto gasta para produzir cada unidade (massa + recheio + pote/embalagem)</small>
+                <h3 style="margin:0; font-size:1.2rem;">Ficha Técnica por Sabor</h3>
+                <small style="color:var(--chocolate-light);">Defina o custo estimado para produzir cada unidade (massa + recheio + pote)</small>
               </div>
-              <button type="button" class="btn-toolbar" id="btnSaveProductCosts" style="background:var(--green); color:#fff; border-color:var(--green); padding:6px 12px; font-size:0.82rem;">
-                💾 Salvar Custos
+              <button type="button" class="btn-head-action" id="btnSaveProductCosts" style="background:var(--green); color:#fff; border-color:var(--green);">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Salvar Custos</span>
               </button>
             </div>
 
             <div class="table-responsive">
-              <table class="admin-table" style="font-size:0.88rem;">
+              <table class="admin-table">
                 <thead>
                   <tr>
                     <th>Sabor</th>
-                    <th>Venda</th>
+                    <th>Preço Venda</th>
                     <th style="min-width:110px;">Seu Custo (R$)</th>
                     <th>Lucro Unit.</th>
                     <th>Margem</th>
@@ -357,27 +533,24 @@
           </div>
 
           <!-- REGISTRO DE DESPESAS OPERACIONAIS -->
-          <div class="metric-panel" style="padding: 22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+          <div class="metric-panel">
+            <div class="panel-header-row">
               <div>
-                <h3 style="margin:0; font-size:1.25rem;">🧾 Gastos & Despesas Cadastradas</h3>
-                <small style="color:var(--chocolate-light);">Compras de ingredientes em atacado, embalagens, gás, etc.</small>
+                <h3 style="margin:0; font-size:1.2rem;">Despesas Operacionais</h3>
+                <small style="color:var(--chocolate-light);">Ingredientes no atacado, embalagens, gás, energia, etc.</small>
               </div>
-              <button type="button" class="btn-header-action btn-new-order-manual" id="btnOpenExpenseModal" style="padding:6px 12px; font-size:0.82rem;">
-                ➕ Lançar Gasto
-              </button>
             </div>
 
-            <div style="margin-bottom:12px; display:flex; gap:6px; flex-wrap:wrap;" id="expenseCategoryPills">
+            <div class="status-pills-wrap" id="expenseCategoryPills" style="margin-bottom:12px;">
               <button class="status-pill active" data-exp-cat="todas">Todas</button>
-              <button class="status-pill" data-exp-cat="insumos">🍫 Ingredientes</button>
-              <button class="status-pill" data-exp-cat="embalagens">📦 Embalagens</button>
-              <button class="status-pill" data-exp-cat="operacional">💡 Gás/Luz</button>
-              <button class="status-pill" data-exp-cat="outros">🏷️ Outros</button>
+              <button class="status-pill" data-exp-cat="insumos">Ingredientes</button>
+              <button class="status-pill" data-exp-cat="embalagens">Embalagens</button>
+              <button class="status-pill" data-exp-cat="operacional">Gás/Luz</button>
+              <button class="status-pill" data-exp-cat="outros">Outros</button>
             </div>
 
-            <div class="table-responsive" style="max-height:380px; overflow-y:auto;">
-              <table class="admin-table" style="font-size:0.88rem;">
+            <div class="table-responsive" style="max-height:360px; overflow-y:auto;">
+              <table class="admin-table">
                 <thead>
                   <tr>
                     <th>Data</th>
@@ -398,11 +571,20 @@
 
       </section>
 
-      <!-- ================= ABA 3: CLIENTES ================= -->
-      <section class="admin-tab-content" id="tabClientes">
+      <!-- ================= PÁGINA 4: CLIENTES ================= -->
+      <section class="admin-page-view" id="viewClientes" data-page="clientes">
+        
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">carteira de clientes</span>
+            <h2>Histórico de Clientes Cadastrados</h2>
+            <p class="page-subtitle">Acesse contatos de WhatsApp, histórico de compras e endereços salvos.</p>
+          </div>
+        </div>
+
         <div class="toolbar-card">
           <div class="search-input-wrap">
-            <span class="search-icon">🔍</span>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="clientSearchInput" placeholder="Buscar cliente por nome, telefone ou bairro...">
           </div>
         </div>
@@ -426,39 +608,47 @@
             </table>
           </div>
         </div>
+
       </section>
 
-      <!-- ================= ABA 4: CARDÁPIO & ESTOQUE ================= -->
-      <section class="admin-tab-content" id="tabCardapio">
-        <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:'Baloo 2', sans-serif; margin:0; font-size:1.4rem;">Controle de Disponibilidade</h2>
-            <p style="margin:2px 0 0; color:var(--chocolate-light); font-size:0.9rem;">
-              Se algum sabor acabar na cozinha hoje, desative-o aqui para avisar os clientes no site.
-            </p>
+      <!-- ================= PÁGINA 5: CARDÁPIO & ESTOQUE ================= -->
+      <section class="admin-page-view" id="viewCardapio" data-page="cardapio">
+        
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">cozinha e cardápio</span>
+            <h2>Disponibilidade de Sabores</h2>
+            <p class="page-subtitle">Pause temporariamente sabores que acabaram na cozinha para sincronizar imediatamente com o site.</p>
           </div>
-          <button type="button" class="btn-toolbar" id="btnResetMenuStock">
-            🔄 Restaurar Todos Disponíveis
-          </button>
+          <div class="page-head-actions">
+            <button type="button" class="btn-head-action" id="btnResetMenuStock">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+              <span>Restaurar Todos Disponíveis</span>
+            </button>
+          </div>
         </div>
 
         <div class="menu-manage-grid" id="menuManageGrid">
           <!-- Renderizado via JavaScript -->
         </div>
+
       </section>
 
-      <!-- ================= ABA 5: DEPOIMENTOS ================= -->
-      <section class="admin-tab-content" id="tabDepoimentos">
-        <div style="margin-bottom: 20px;">
-          <h2 style="font-family:'Baloo 2', sans-serif; margin:0; font-size:1.4rem;">Moderação de Avaliações Reais</h2>
-          <p style="margin:2px 0 0; color:var(--chocolate-light); font-size:0.9rem;">
-            Aprove, oculte ou exclua as avaliações que os clientes enviam pelo site.
-          </p>
+      <!-- ================= PÁGINA 6: DEPOIMENTOS ================= -->
+      <section class="admin-page-view" id="viewDepoimentos" data-page="depoimentos">
+        
+        <div class="page-head">
+          <div class="page-head-copy">
+            <span class="eyebrow">avaliações do site</span>
+            <h2>Moderação de Depoimentos</h2>
+            <p class="page-subtitle">Aprove, oculte ou exclua as avaliações enviadas pelos clientes pelo formulário da loja.</p>
+          </div>
         </div>
 
         <div class="reviews-grid" id="reviewsManageGrid">
           <!-- Renderizado via JavaScript -->
         </div>
+
       </section>
 
     </main>
@@ -467,10 +657,10 @@
   <!-- ===================== MODAL MENSAGENS WHATSAPP ===================== -->
   <div class="modal-overlay" id="waMessageModal">
     <div class="modal-card">
-      <button class="modal-close-btn" id="btnCloseWaModal">&times;</button>
-      <h3 class="modal-title">💬 Mensagens Rápidas no WhatsApp</h3>
-      <p style="font-size:0.9rem; color:var(--chocolate-light); margin-top:-10px; margin-bottom:16px;" id="waModalSubtitle">
-        Escolha uma mensagem para enviar ao cliente:
+      <button class="modal-close-btn" id="btnCloseWaModal" aria-label="Fechar janela">&times;</button>
+      <h3 class="modal-title">Mensagens Rápidas no WhatsApp</h3>
+      <p style="font-size:0.9rem; color:var(--chocolate-light); margin-top:-6px; margin-bottom:16px;" id="waModalSubtitle">
+        Escolha uma mensagem estruturada para enviar ao cliente:
       </p>
 
       <div class="wa-message-options" id="waMessageOptions">
@@ -482,31 +672,31 @@
   <!-- ===================== MODAL NOVO PEDIDO MANUAL ===================== -->
   <div class="modal-overlay" id="manualOrderModal">
     <div class="modal-card" style="max-width:580px;">
-      <button class="modal-close-btn" id="btnCloseManualOrderModal">&times;</button>
-      <h3 class="modal-title">🛒 Registrar Venda / Pedido Manual</h3>
-      <p style="font-size:0.85rem; color:var(--chocolate-light); margin:-8px 0 4px;">Para clientes que ligam, pedem no WhatsApp ou na entrega direta 🤎</p>
+      <button class="modal-close-btn" id="btnCloseManualOrderModal" aria-label="Fechar janela">&times;</button>
+      <h3 class="modal-title">Registrar Venda / Pedido Manual</h3>
+      <p style="font-size:0.85rem; color:var(--chocolate-light); margin:-6px 0 12px;">Para clientes que pedem pessoalmente no balcão, WhatsApp ou telefone.</p>
       
       <form id="manualOrderForm" style="display:flex; flex-direction:column; gap:14px;">
 
         <!-- Origem da venda -->
-        <div style="background:var(--cream); border-radius:10px; padding:12px; border:1px solid var(--admin-border);">
-          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:8px;">📣 Como foi feita essa venda?</label>
+        <div class="form-boxed-group">
+          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:8px;">Canal de Origem da Venda</label>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <label class="radio-origin-btn">
               <input type="radio" name="manualOrigin" value="whatsapp" checked>
-              <span>📱 WhatsApp</span>
+              <span>WhatsApp</span>
             </label>
             <label class="radio-origin-btn">
               <input type="radio" name="manualOrigin" value="balcao">
-              <span>🏪 Balcão / Pessoalmente</span>
+              <span>Balcão / Retirada</span>
             </label>
             <label class="radio-origin-btn">
               <input type="radio" name="manualOrigin" value="telefone">
-              <span>📞 Telefone</span>
+              <span>Telefone</span>
             </label>
             <label class="radio-origin-btn">
               <input type="radio" name="manualOrigin" value="outro">
-              <span>🏷️ Outro</span>
+              <span>Outro</span>
             </label>
           </div>
         </div>
@@ -524,19 +714,19 @@
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div>
-            <label style="font-size:0.85rem; font-weight:700;">Tipo de Entrega</label>
+            <label style="font-size:0.85rem; font-weight:700;">Modalidade</label>
             <select id="manualOrderType" class="toolbar-select" style="width:100%;">
-              <option value="entrega">🛵 Entrega em Domicílio</option>
-              <option value="retirada">🛍️ Retirada no Local</option>
+              <option value="entrega">Entrega em Domicílio</option>
+              <option value="retirada">Retirada no Local</option>
             </select>
           </div>
           <div>
             <label style="font-size:0.85rem; font-weight:700;">Forma de Pagamento</label>
             <select id="manualPayment" class="toolbar-select" style="width:100%;">
-              <option value="pix">💳 Pix</option>
-              <option value="dinheiro">💵 Dinheiro</option>
-              <option value="cartao">💳 Cartão (Débito/Crédito)</option>
-              <option value="fiado">🤝 Fiado / A combinar</option>
+              <option value="pix">Pix</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao">Cartão (Débito/Crédito)</option>
+              <option value="fiado">Fiado / A combinar</option>
             </select>
           </div>
         </div>
@@ -547,123 +737,32 @@
         </div>
 
         <div>
-          <label style="font-size:0.85rem; font-weight:700;">Itens do Pedido (Escolha os sabores)</label>
-          <div id="manualItemsSelectArea" style="max-height:180px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+          <label style="font-size:0.85rem; font-weight:700;">Itens do Pedido (Selecione as quantidades)</label>
+          <div id="manualItemsSelectArea" style="max-height:180px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px;">
             <!-- Itens para selecionar via JS -->
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--cream); border-radius:10px; padding:12px 16px; border:2px solid var(--gold);">
-          <span style="font-weight:700; color:var(--chocolate);">💰 Total do Pedido:</span>
-          <span id="manualOrderTotalDisplay" style="font-family:'Baloo 2', sans-serif; font-size:1.7rem; font-weight:800; color:var(--red);">R$ 0,00</span>
+        <div class="order-total-badge-box">
+          <span style="font-weight:700; color:var(--chocolate-dark);">Total do Pedido:</span>
+          <span id="manualOrderTotalDisplay" style="font-family:'Baloo 2', sans-serif; font-size:1.6rem; font-weight:800; color:var(--red);">R$ 0,00</span>
         </div>
 
         <div>
           <label style="font-size:0.85rem; font-weight:700;">Observações</label>
-          <textarea id="manualOrderNotes" class="toolbar-select" style="width:100%; height:60px;" placeholder="Ex: Pago no Pix ✓, entregar após 18h, troco para R$50..."></textarea>
+          <textarea id="manualOrderNotes" class="toolbar-select" style="width:100%; height:60px;" placeholder="Ex: Pago no Pix, entregar após 18h, troco para R$50..."></textarea>
         </div>
 
-        <button type="submit" class="btn-login-submit" style="margin-top:6px;">✅ Salvar Venda no Painel 🍫</button>
+        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Venda no Painel</button>
       </form>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAV MOBILE (visível apenas em celular) -->
-  <nav class="mobile-bottom-nav" id="mobileBottomNav">
-    <button class="mobile-nav-btn active" data-tab="pedidos" title="Ver Pedidos">
-      <span class="mobile-nav-icon">📦</span>
-      <span class="mobile-nav-label">Pedidos</span>
-      <span class="mobile-nav-badge hidden" id="mobileBadgePedidos">0</span>
-    </button>
-    <button class="mobile-nav-btn" data-tab="custos" title="Custos e Lucro">
-      <span class="mobile-nav-icon">💰</span>
-      <span class="mobile-nav-label">Custos</span>
-    </button>
-    <button class="mobile-nav-btn mobile-nav-center-btn" id="btnOpenManualOrderMobile" title="Registrar Nova Venda">
-      <span class="mobile-nav-icon">➕</span>
-      <span class="mobile-nav-label">Venda</span>
-    </button>
-    <button class="mobile-nav-btn" data-tab="metricas" title="Métricas e Vendas">
-      <span class="mobile-nav-icon">📊</span>
-      <span class="mobile-nav-label">Métricas</span>
-    </button>
-    <button class="mobile-nav-btn" id="btnOpenMobileMenu" title="Mais Opções">
-      <span class="mobile-nav-icon">☰</span>
-      <span class="mobile-nav-label">Mais</span>
-    </button>
-  </nav>
-
-  <!-- MODAL / BOTTOM SHEET "MAIS OPÇÕES" NO CELULAR -->
-  <div class="modal-overlay" id="moreOptionsModal">
-    <div class="modal-card more-options-sheet">
-      <div class="sheet-drag-handle"></div>
-      <div class="sheet-header">
-        <h3 class="modal-title" style="margin:0; font-size:1.15rem;">⚙️ Mais Opções do Painel</h3>
-        <button class="modal-close-btn" id="btnCloseMoreOptionsModal">&times;</button>
-      </div>
-      <div class="more-options-grid">
-        <button type="button" class="more-opt-btn" data-tab="clientes">
-          <span class="more-opt-icon">👥</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Clientes</span>
-            <span class="more-opt-sub">Histórico de compras e dados</span>
-          </div>
-          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
-        </button>
-
-        <button type="button" class="more-opt-btn" data-tab="cardapio">
-          <span class="more-opt-icon">🍫</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Cardápio & Estoque</span>
-            <span class="more-opt-sub">Pausar ou ativar sabores</span>
-          </div>
-          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
-        </button>
-
-        <button type="button" class="more-opt-btn" data-tab="depoimentos">
-          <span class="more-opt-icon">⭐</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Depoimentos</span>
-            <span class="more-opt-sub">Gerenciar avaliações</span>
-          </div>
-          <span style="color:var(--gold-dark); font-weight:bold;">→</span>
-        </button>
-
-        <button type="button" class="more-opt-btn" id="btnSheetBackup">
-          <span class="more-opt-icon">💾</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Baixar Backup Geral</span>
-            <span class="more-opt-sub">Salvar arquivo com todos os dados</span>
-          </div>
-          <span style="color:var(--gold-dark); font-weight:bold;">↓</span>
-        </button>
-
-        <a href="index.html" target="_blank" class="more-opt-btn" id="btnSheetViewStore">
-          <span class="more-opt-icon">🏪</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Ver Loja Online</span>
-            <span class="more-opt-sub">Abrir site do cliente</span>
-          </div>
-          <span style="color:var(--gold-dark); font-weight:bold;">↗</span>
-        </a>
-
-        <button type="button" class="more-opt-btn more-opt-danger" id="btnSheetLogout">
-          <span class="more-opt-icon">🚪</span>
-          <div class="more-opt-info">
-            <span class="more-opt-title">Sair do Painel</span>
-            <span class="more-opt-sub">Encerrar sessão com segurança</span>
-          </div>
-          <span style="color:#C62828; font-weight:bold;">✕</span>
-        </button>
-      </div>
     </div>
   </div>
 
   <!-- ===================== MODAL NOVO GASTO / DESPESA ===================== -->
   <div class="modal-overlay" id="expenseModal">
     <div class="modal-card" style="max-width:480px;">
-      <button class="modal-close-btn" id="btnCloseExpenseModal">&times;</button>
-      <h3 class="modal-title">🧾 Lançar Novo Gasto / Despesa</h3>
+      <button class="modal-close-btn" id="btnCloseExpenseModal" aria-label="Fechar janela">&times;</button>
+      <h3 class="modal-title">Lançar Novo Gasto / Despesa</h3>
       
       <form id="expenseForm" style="display:flex; flex-direction:column; gap:14px;">
         <div>
@@ -685,11 +784,11 @@
         <div>
           <label style="font-size:0.85rem; font-weight:700;">Categoria</label>
           <select id="expenseCategory" class="toolbar-select" style="width:100%;">
-            <option value="insumos">🍫 Ingredientes / Insumos (Leite condensado, chocolate, Ninho, etc.)</option>
-            <option value="embalagens">📦 Embalagens (Potes, sacolas, fitas, adesivos)</option>
-            <option value="operacional">💡 Operacional (Gás de cozinha, energia, água)</option>
-            <option value="entrega">🛵 Entregas / Combustível</option>
-            <option value="outros">🏷️ Outros Gastos</option>
+            <option value="insumos">Ingredientes / Insumos (Leite condensado, chocolate, etc.)</option>
+            <option value="embalagens">Embalagens (Potes, sacolas, fitas, adesivos)</option>
+            <option value="operacional">Operacional (Gás de cozinha, energia, água)</option>
+            <option value="entrega">Entregas / Combustível</option>
+            <option value="outros">Outros Gastos</option>
           </select>
         </div>
 
@@ -698,10 +797,19 @@
           <input type="text" id="expenseNotes" class="toolbar-select" style="width:100%;" placeholder="Ex: Comprado no Atacadão">
         </div>
 
-        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Despesa 💾</button>
+        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Despesa</button>
       </form>
     </div>
   </div>
+
+  <!-- ÁREA OCULTA PARA IMPRESSÃO DE COMANDA TÉRMICA / A4 -->
+  <div id="printSlipArea" class="no-print"></div>
+
+  <!-- CONTAINER DE TOASTS -->
+  <div class="admin-toast-container" id="adminToastContainer"></div>
+
+</body>
+</html>
 
   <!-- ÁREA OCULTA PARA IMPRESSÃO DE COMANDA TÉRMICA / A4 -->
   <div id="printSlipArea" class="no-print"></div>

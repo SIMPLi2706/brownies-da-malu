@@ -85,7 +85,7 @@
         const submitBtn = document.getElementById('btnLoginSubmit');
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verificando... ⏳';
+        submitBtn.textContent = 'Verificando...';
 
         let isAuthenticated = false;
 
@@ -116,7 +116,7 @@
         }
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Entrar no Painel 🍫';
+        submitBtn.textContent = 'Entrar no Painel';
 
         if (isAuthenticated) {
           AdminState.authenticated = true;
@@ -126,7 +126,7 @@
             sessionStorage.setItem('malu_admin_auth', 'true');
           }
           document.getElementById('loginGate').classList.add('hidden');
-          showToast('Bem-vinda de volta, Malu! 👩‍🍳🤎', 'success');
+          showToast('Bem-vinda de volta, Malu!', 'success');
           carregarDadosCompletos();
         } else {
           showToast('E-mail ou senha de administradora incorretos.', 'error');
@@ -204,39 +204,50 @@
 
   function initSoundToggle() {
     const btn = document.getElementById('btnToggleSound');
-    const icon = document.getElementById('soundIcon');
-    const text = document.getElementById('soundText');
+    const iconWrap = document.getElementById('soundIconWrap');
     if (!btn) return;
 
     btn.addEventListener('click', () => {
       AdminState.soundEnabled = !AdminState.soundEnabled;
       btn.classList.toggle('active', AdminState.soundEnabled);
       if (AdminState.soundEnabled) {
-        icon.textContent = '🔔';
-        text.textContent = 'Som: Ligado';
+        if (iconWrap) {
+          iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
+        }
         playSweetChime();
-        showToast('Som de notificação ativado! 🔔', 'info');
+        showToast('Som de notificação ativado', 'info');
       } else {
-        icon.textContent = '🔕';
-        text.textContent = 'Som: Mudo';
+        if (iconWrap) {
+          iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="2" x2="22" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 11v-3a7 7 0 0 0-11.64-5.22"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
+        }
         showToast('Som de notificação desativado', 'info');
       }
     });
   }
 
-  // ===================== TOAST NOTIFICATIONS =====================
+  // ===================== TOAST NOTIFICATIONS PROFISSIONAIS =====================
   function showToast(message, type = 'info') {
     let container = document.getElementById('adminToastContainer');
     if (!container) return;
 
     const toast = document.createElement('div');
     toast.className = `admin-toast ${type === 'new-order' ? 'toast-new-order' : ''}`;
-    const icon = type === 'success' ? '🤎' : type === 'error' ? '⚠️' : type === 'new-order' ? '🔔' : 'ℹ️';
     
+    let iconSvg = '';
+    if (type === 'success') {
+      iconSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E7D32" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+    } else if (type === 'error') {
+      iconSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#C62828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    } else if (type === 'new-order') {
+      iconSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
+    } else {
+      iconSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--chocolate-dark)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    }
+
     toast.innerHTML = `
-      <span style="font-size:1.3rem;">${icon}</span>
-      <span style="flex:1;">${escapeHtml(message)}</span>
-      <button style="color:#888; font-size:1.1rem; padding:0 4px;" aria-label="Fechar">&times;</button>
+      <span style="display:flex; align-items:center; justify-content:center; flex-shrink:0;">${iconSvg}</span>
+      <span style="flex:1; font-weight:600; font-size:0.92rem;">${escapeHtml(message)}</span>
+      <button style="background:none; border:none; color:var(--chocolate-light); font-size:1.2rem; cursor:pointer; padding:0 4px; line-height:1;" aria-label="Fechar">&times;</button>
     `;
 
     toast.querySelector('button').addEventListener('click', () => toast.remove());
@@ -249,7 +260,7 @@
         toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 320);
       }
-    }, 4500);
+    }, type === 'new-order' ? 8000 : 4000);
   }
 
   function escapeHtml(str) {
@@ -383,9 +394,9 @@
           const indicator = document.getElementById('liveStatusText');
           if (indicator) {
             if (status === 'SUBSCRIBED') {
-              indicator.textContent = 'Conectado em tempo real 🟢';
+              indicator.textContent = 'Conectado em tempo real';
             } else {
-              indicator.textContent = 'Modo sincronizado 🔄';
+              indicator.textContent = 'Modo sincronizado';
             }
           }
         });
@@ -468,18 +479,11 @@
     document.getElementById('kpiRevenueTotal').textContent = `R$ ${revTotal.toFixed(2).replace('.', ',')}`;
     document.getElementById('kpiTotalOrdersSub').textContent = `${AdminState.orders.length} pedidos no total`;
 
-    // Badges das abas
+    // Badge de pedidos pendentes na sidebar
     const badgePending = document.getElementById('badgePendingOrders');
     if (badgePending) {
       badgePending.textContent = pendingCount;
       badgePending.classList.toggle('hidden', pendingCount === 0);
-    }
-
-    // Badge da bottom nav mobile (sincronizar com pedidos pendentes)
-    const mobileBadge = document.getElementById('mobileBadgePedidos');
-    if (mobileBadge) {
-      mobileBadge.textContent = pendingCount;
-      mobileBadge.classList.toggle('hidden', pendingCount === 0);
     }
 
     const badgeClients = document.getElementById('badgeTotalClients');
@@ -550,7 +554,10 @@
 
     container.innerHTML = entries.slice(0, 5).map(([name, count]) => `
       <div class="neighborhood-item">
-        <span class="neighborhood-name">📍 ${escapeHtml(name)}</span>
+        <span class="neighborhood-name">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${escapeHtml(name)}
+        </span>
         <span class="neighborhood-count">${count} pedido${count === 1 ? '' : 's'}</span>
       </div>
     `).join('');
@@ -566,7 +573,9 @@
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">📦</div>
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          </div>
           <h3>Nenhum pedido encontrado</h3>
           <p>Não há pedidos para os filtros selecionados no momento.</p>
         </div>
@@ -587,7 +596,10 @@
           <div class="order-card-header">
             <div class="order-code-wrap">
               <span class="order-code">#${escapeHtml(o.codigo_pedido)}</span>
-              <span class="order-time">🕒 ${dateStr}</span>
+              <span class="order-time">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ${dateStr}
+              </span>
             </div>
             <span class="order-status-badge badge-${status}">${statusBadge}</span>
           </div>
@@ -595,20 +607,30 @@
           <div class="order-card-body">
             <div class="customer-info-box">
               <div>
-                <div class="customer-name">👤 ${escapeHtml(o.nome_cliente || 'Cliente')}</div>
-                <div class="customer-phone">📞 ${escapeHtml(o.telefone_cliente || 'Sem telefone')}</div>
+                <div class="customer-name">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  ${escapeHtml(o.nome_cliente || 'Cliente')}
+                </div>
+                <div class="customer-phone">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  ${escapeHtml(o.telefone_cliente || 'Sem telefone')}
+                </div>
               </div>
-              <button type="button" class="btn-wa-direct btn-open-wa-modal" data-id="${o.id || o.codigo_pedido}" title="Enviar mensagem no WhatsApp">
-                💬 WhatsApp
+              <button type="button" class="btn-wa-direct btn-open-wa-modal" data-id="${o.id || o.codigo_pedido}" title="Enviar mensagem no WhatsApp" style="display:inline-flex; align-items:center; gap:6px;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                <span>WhatsApp</span>
               </button>
             </div>
 
             <div class="delivery-info-box">
               <div class="delivery-badge-row">
-                <span class="delivery-type-label">${isDelivery ? '🛵 Entrega em Domicílio' : '🛍️ Retirada no Local'}</span>
+                <span class="delivery-type-label" style="display:inline-flex; align-items:center; gap:5px;">
+                  ${isDelivery ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Entrega em Domicílio` : `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Retirada no Local`}
+                </span>
                 ${isDelivery && o.endereco_entrega ? `
-                  <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.endereco_entrega)}" target="_blank" rel="noopener" class="btn-maps-link">
-                    🗺️ Maps
+                  <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.endereco_entrega)}" target="_blank" rel="noopener" class="btn-maps-link" style="display:inline-flex; align-items:center; gap:4px;">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>Maps</span>
                   </a>
                 ` : ''}
               </div>
@@ -642,19 +664,19 @@
 
             <div class="order-actions-row">
               <select class="status-select order-status-changer" data-id="${o.id || o.codigo_pedido}">
-                <option value="pendente" ${status === 'pendente' ? 'selected' : ''}>⏳ Pendente</option>
-                <option value="preparando" ${status === 'preparando' ? 'selected' : ''}>👩‍🍳 Em Preparo</option>
-                <option value="entrega" ${status === 'entrega' ? 'selected' : ''}>🛵 Saiu p/ Entrega</option>
-                <option value="entregue" ${status === 'entregue' ? 'selected' : ''}>✅ Entregue</option>
-                <option value="cancelado" ${status === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                <option value="pendente" ${status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                <option value="preparando" ${status === 'preparando' ? 'selected' : ''}>Em Preparo</option>
+                <option value="entrega" ${status === 'entrega' ? 'selected' : ''}>Saiu p/ Entrega</option>
+                <option value="entregue" ${status === 'entregue' ? 'selected' : ''}>Entregue</option>
+                <option value="cancelado" ${status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
               </select>
 
-              <button type="button" class="btn-icon-action btn-print-order" data-id="${o.id || o.codigo_pedido}" title="Imprimir Comanda">
-                🖨️
+              <button type="button" class="btn-icon-action btn-print-order" data-id="${o.id || o.codigo_pedido}" title="Imprimir Comanda" style="display:inline-flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               </button>
 
-              <button type="button" class="btn-icon-action btn-icon-danger btn-delete-order" data-id="${o.id || o.codigo_pedido}" title="Excluir Pedido">
-                🗑️
+              <button type="button" class="btn-icon-action btn-icon-danger btn-delete-order" data-id="${o.id || o.codigo_pedido}" title="Excluir Pedido" style="display:inline-flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
               </button>
             </div>
           </div>
@@ -708,11 +730,11 @@
 
   function obterBadgeStatus(status) {
     switch(status) {
-      case 'pendente': return '⏳ Pendente';
-      case 'preparando': return '👩‍🍳 Preparando';
-      case 'entrega': return '🛵 Na Rota';
-      case 'entregue': return '✅ Concluído';
-      case 'cancelado': return '❌ Cancelado';
+      case 'pendente': return 'Pendente';
+      case 'preparando': return 'Preparando';
+      case 'entrega': return 'Na Rota';
+      case 'entregue': return 'Concluído';
+      case 'cancelado': return 'Cancelado';
       default: return status;
     }
   }
@@ -823,24 +845,24 @@
 
     const messages = [
       {
-        title: '👩‍🍳 1. Confirmar e Iniciar Preparo',
+        title: '1. Confirmar e Iniciar Preparo',
         desc: 'Avisa o cliente que o pedido foi aceito e já está sendo preparado com muito carinho.',
-        text: `Olá ${clientName}! Aqui é a Malu 👩‍🍳🤎\n\nConfirmando que recebemos seu pedido #${order.codigo_pedido} (${itemsText}) no valor de R$ ${(parseFloat(order.valor_total)||0).toFixed(2).replace('.', ',')}.\n\nJá estamos preparando seus brownies fresquinhos! Assim que sair para você, te aviso por aqui ✨.`
+        text: `Olá ${clientName}! Aqui é a Malu.\n\nConfirmando que recebemos seu pedido #${order.codigo_pedido} (${itemsText}) no valor de R$ ${(parseFloat(order.valor_total)||0).toFixed(2).replace('.', ',')}.\n\nJá estamos preparando seus brownies fresquinhos! Assim que sair para você, te aviso por aqui.`
       },
       {
-        title: '🛵 2. Avisar que Saiu para Entrega',
+        title: '2. Avisar que Saiu para Entrega',
         desc: 'Informa que o motoboy já pegou os brownies e está a caminho.',
-        text: `Olá ${clientName}! Boas notícias: seu pedido #${order.codigo_pedido} acabou de sair para entrega! 🛵💨\n\nNosso entregador já está a caminho do seu endereço:\n📍 ${order.endereco_entrega || 'Seu endereço'}.\n\nQualquer dúvida é só chamar!`
+        text: `Olá ${clientName}! Boas notícias: seu pedido #${order.codigo_pedido} acabou de sair para entrega!\n\nNosso entregador já está a caminho do seu endereço:\n${order.endereco_entrega || 'Seu endereço'}.\n\nQualquer dúvida é só chamar!`
       },
       {
-        title: '🛍️ 3. Pronto para Retirada no Local',
+        title: '3. Pronto para Retirada no Local',
         desc: 'Avisa que os brownies já estão embalados esperando o cliente buscar.',
-        text: `Olá ${clientName}! Seu pedido #${order.codigo_pedido} já está prontinho e embalado esperando por você para retirada! 🍫✨\n\nPode passar quando quiser!`
+        text: `Olá ${clientName}! Seu pedido #${order.codigo_pedido} já está prontinho e embalado esperando por você para retirada!\n\nPode passar quando quiser!`
       },
       {
-        title: '⭐ 4. Entrega Concluída e Agradecimento',
+        title: '4. Entrega Concluída e Agradecimento',
         desc: 'Agradece a preferência e convida o cliente a avaliar no site.',
-        text: `Olá ${clientName}! Seu pedido #${order.codigo_pedido} foi entregue! 🤎\n\nMuito obrigada por escolher o Brownie da Malu! Esperamos de coração que ame cada mordida.\n\nSe puder deixar sua avaliação no nosso site, ficaremos muito felizes: https://brownies-da-malu.vercel.app/#depoimentos ⭐`
+        text: `Olá ${clientName}! Seu pedido #${order.codigo_pedido} foi entregue!\n\nMuito obrigada por escolher o Brownie da Malu! Esperamos de coração que ame cada mordida.\n\nSe puder deixar sua avaliação no nosso site, ficaremos muito felizes: https://brownies-da-malu.vercel.app/#depoimentos`
       }
     ];
 
@@ -893,7 +915,7 @@
           <strong>DATA:</strong> ${dataHora}<br>
           <strong>CLIENTE:</strong> ${escapeHtml(order.nome_cliente || 'Cliente')}<br>
           <strong>TEL:</strong> ${escapeHtml(order.telefone_cliente || 'N/A')}<br>
-          <strong>TIPO:</strong> ${isDelivery ? '🛵 ENTREGA EM DOMICÍLIO' : '🛍️ RETIRADA NO LOCAL'}<br>
+          <strong>TIPO:</strong> ${isDelivery ? 'ENTREGA EM DOMICÍLIO' : 'RETIRADA NO LOCAL'}<br>
           ${isDelivery ? `<strong>ENDEREÇO:</strong> ${escapeHtml(order.endereco_entrega || '')}<br>` : ''}
         </div>
         <div class="print-slip-divider"></div>
@@ -915,7 +937,7 @@
         </div>
         <div class="print-slip-divider"></div>
         <div class="print-slip-center" style="font-size:10px;">
-          Obrigado pela preferência! 🤎<br>
+          Obrigado pela preferência!<br>
           Instagram: @browniesdamalu_
         </div>
       </div>
@@ -1042,7 +1064,7 @@
       
       modal.classList.remove('active');
       form.reset();
-      showToast(`Pedido #${codigo} adicionado com sucesso! 🍫`, 'success');
+      showToast(`Pedido #${codigo} adicionado com sucesso!`, 'success');
       atualizarTodaUI();
     });
   }
@@ -1131,8 +1153,9 @@
           <td><small>${escapeHtml(c.endereco)}</small></td>
           <td><strong>${c.totalOrders}</strong> pedido${c.totalOrders === 1 ? '' : 's'}</td>
           <td>
-            <button type="button" class="btn-toolbar btn-quick-order-client" data-name="${escapeHtml(c.nome)}" data-phone="${escapeHtml(c.telefone)}" style="padding:4px 8px; font-size:0.78rem;">
-              ➕ Pedido
+            <button type="button" class="btn-toolbar btn-quick-order-client" data-name="${escapeHtml(c.nome)}" data-phone="${escapeHtml(c.telefone)}" style="padding:4px 10px; font-size:0.78rem; display:inline-flex; align-items:center; gap:5px;">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Novo Pedido</span>
             </button>
           </td>
         </tr>
@@ -1164,7 +1187,7 @@
       resetBtn.addEventListener('click', () => {
         AdminState.stockStatus = {};
         localStorage.setItem('malu_stock_status', JSON.stringify({}));
-        showToast('Todos os sabores foram marcados como DISPONÍVEIS! 🍫', 'success');
+        showToast('Todos os sabores foram marcados como DISPONÍVEIS!', 'success');
         renderizarCardapio();
       });
     }
@@ -1182,7 +1205,7 @@
           <div class="menu-card-img-wrap">
             <img src="${f.img}" alt="${f.name}">
             <span class="stock-badge ${isOutOfStock ? 'badge-out-stock' : 'badge-in-stock'}">
-              ${isOutOfStock ? '❌ Esgotado hoje' : '✅ Disponível'}
+              ${isOutOfStock ? 'Esgotado Hoje' : 'Disponível'}
             </span>
           </div>
 
@@ -1193,7 +1216,7 @@
             <div class="menu-card-foot">
               <span class="menu-card-price">${f.price}</span>
               <button type="button" class="toggle-stock-btn ${isOutOfStock ? 'active' : ''}" data-name="${escapeHtml(f.name)}">
-                ${isOutOfStock ? '🟢 Tornar Disponível' : '🔴 Marcar Esgotado'}
+                ${isOutOfStock ? 'Tornar Disponível' : 'Marcar Esgotado'}
               </button>
             </div>
           </div>
@@ -1210,8 +1233,8 @@
         
         showToast(
           AdminState.stockStatus[name] 
-            ? `Sabor "${name}" marcado como DISPONÍVEL! 🍫` 
-            : `Sabor "${name}" marcado como ESGOTADO HOJE ⚠️`,
+            ? `Sabor "${name}" marcado como DISPONÍVEL!` 
+            : `Sabor "${name}" marcado como ESGOTADO HOJE`,
           'info'
         );
         renderizarCardapio();
@@ -1227,7 +1250,9 @@
     if (AdminState.reviews.length === 0) {
       grid.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">⭐</div>
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
           <h3>Nenhum depoimento para moderar</h3>
           <p>Quando os clientes enviarem avaliações pelo site, elas aparecerão aqui.</p>
         </div>
@@ -1237,7 +1262,9 @@
 
     grid.innerHTML = AdminState.reviews.map(r => {
       const isAprovado = r.aprovado !== false;
-      const stars = '⭐'.repeat(r.estrelas || 5);
+      const stars = Array.from({ length: r.estrelas || 5 }).map(() =>
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="#FBBF24" stroke="#F59E0B" stroke-width="1" style="display:inline-block; vertical-align:middle; margin-right:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+      ).join('');
       const dataStr = r.criado_em ? new Date(r.criado_em).toLocaleDateString('pt-BR') : '';
 
       return `
@@ -1261,8 +1288,8 @@
               <button type="button" class="btn-toolbar btn-toggle-review" data-id="${r.id}" style="padding:4px 8px; font-size:0.75rem;">
                 ${isAprovado ? 'Ocultar' : 'Aprovar'}
               </button>
-              <button type="button" class="btn-icon-action btn-icon-danger btn-delete-review" data-id="${r.id}" style="width:28px; height:28px; font-size:0.8rem;">
-                🗑️
+              <button type="button" class="btn-icon-action btn-icon-danger btn-delete-review" data-id="${r.id}" style="width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;" title="Excluir Depoimento">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               </button>
             </div>
           </div>
@@ -1309,117 +1336,158 @@
     });
   }
 
-  // ===================== CONTROLE DE NAVEGAÇÃO DE ABAS =====================
-  function initTabNav() {
-    // Mede a altura real da barra superior fixa e atualiza a variável CSS
-    function updateTopBarHeight() {
-      const topBar = document.getElementById('adminTopBarFixed');
-      if (topBar) {
-        const h = topBar.offsetHeight;
-        if (h > 0) {
-          document.documentElement.style.setProperty('--admin-topbar-height', `${h}px`);
-        }
-      }
+  // ===================== ROTEAMENTO DE PÁGINAS E SIDEBAR DRAWER =====================
+  const PAGE_TITLES = {
+    'pedidos': 'Gestão de Pedidos',
+    'metricas': 'Métricas & Vendas',
+    'custos': 'Custos & Lucro Líquido',
+    'clientes': 'Carteira de Clientes',
+    'cardapio': 'Gestão do Cardápio',
+    'depoimentos': 'Depoimentos dos Clientes'
+  };
+
+  const PAGE_VIEW_IDS = {
+    'pedidos': 'viewPedidos',
+    'metricas': 'viewMetricas',
+    'custos': 'viewCustos',
+    'clientes': 'viewClientes',
+    'cardapio': 'viewCardapio',
+    'depoimentos': 'viewDepoimentos'
+  };
+
+  function closeSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const burger = document.getElementById('adminBurgerBtn');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+    if (burger) {
+      burger.classList.remove('active');
+      burger.setAttribute('aria-expanded', 'false');
     }
-    window.addEventListener('resize', updateTopBarHeight);
-    window.addEventListener('orientationchange', updateTopBarHeight);
-    setTimeout(updateTopBarHeight, 50);
-    setTimeout(updateTopBarHeight, 350);
+  }
 
-    // Função de troca de aba
-    function switchTab(tabTarget) {
-      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.mobile-nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
+  function openSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const burger = document.getElementById('adminBurgerBtn');
+    if (sidebar) sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('active');
+    if (burger) {
+      burger.classList.add('active');
+      burger.setAttribute('aria-expanded', 'true');
+    }
+  }
 
-      const activeContent = document.getElementById(`tab${tabTarget.charAt(0).toUpperCase() + tabTarget.slice(1)}`);
-      if (activeContent) activeContent.classList.add('active');
+  function toggleSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  }
 
-      // Ativar botão na nav desktop
-      document.querySelectorAll(`.admin-tab-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
-      // Ativar botão na bottom nav mobile
-      document.querySelectorAll(`.mobile-nav-btn[data-tab="${tabTarget}"]`).forEach(b => b.classList.add('active'));
+  function navigateToPage(pageKey, updateHash = true) {
+    const key = (pageKey || '').toLowerCase().replace('#', '') || 'pedidos';
+    const targetKey = PAGE_VIEW_IDS[key] ? key : 'pedidos';
 
-      // Se for uma das abas do menu 'Mais', manter o botão 'Mais' destacado na bottom nav
-      const moreTabs = ['clientes', 'cardapio', 'depoimentos'];
-      const btnMore = document.getElementById('btnOpenMobileMenu');
-      if (btnMore) {
-        btnMore.classList.toggle('active', moreTabs.includes(tabTarget));
-      }
+    // Ocultar todas as páginas e ativar a página desejada
+    document.querySelectorAll('.admin-page-view').forEach(view => {
+      view.classList.remove('active');
+    });
 
-      // Rola para o topo imediatamente, evitando corte de conteúdo ou pulos
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      updateTopBarHeight();
+    const activeView = document.getElementById(PAGE_VIEW_IDS[targetKey]);
+    if (activeView) {
+      activeView.classList.add('active');
     }
 
-    // Botões da nav desktop
-    const tabBtns = document.querySelectorAll('.admin-tab-btn');
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        switchTab(btn.getAttribute('data-tab'));
+    // Atualizar links ativos na sidebar
+    document.querySelectorAll('.sidebar-link[data-page]').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('data-page') === targetKey);
+    });
+
+    // Atualizar título do cabeçalho
+    const titleEl = document.getElementById('topActivePageTitle');
+    if (titleEl) {
+      titleEl.textContent = PAGE_TITLES[targetKey] || 'Painel';
+    }
+
+    // Atualizar hash na URL se necessário
+    if (updateHash && window.location.hash !== `#${targetKey}`) {
+      window.history.pushState(null, '', `#${targetKey}`);
+    }
+
+    // Rola para o topo instantaneamente
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Fecha a sidebar se estiver aberta
+    closeSidebar();
+  }
+
+  function initNavigationRouter() {
+    // Botão hambúrguer no topo
+    const burgerBtn = document.getElementById('adminBurgerBtn');
+    if (burgerBtn) {
+      burgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSidebar();
+      });
+    }
+
+    // Botão fechar na sidebar
+    const closeBtn = document.getElementById('btnCloseSidebar');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeSidebar);
+    }
+
+    // Overlay fecha ao clicar fora
+    const overlay = document.getElementById('sidebarOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Tecla ESC fecha a sidebar
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSidebar();
+    });
+
+    // Cliques nos links de navegação da sidebar
+    document.querySelectorAll('.sidebar-link[data-page]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('data-page');
+        navigateToPage(page, true);
       });
     });
 
-    // Botões da bottom nav mobile
-    const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn[data-tab]');
-    mobileNavBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        switchTab(btn.getAttribute('data-tab'));
-      });
+    // Ações rápidas na sidebar
+    document.getElementById('sidebarNewOrderBtn')?.addEventListener('click', () => {
+      closeSidebar();
+      document.getElementById('btnOpenManualOrderModal')?.click();
     });
 
-    // Botão central (+) da bottom nav abre modal de nova venda
-    const btnMobileOrder = document.getElementById('btnOpenManualOrderMobile');
-    if (btnMobileOrder) {
-      btnMobileOrder.addEventListener('click', () => {
-        document.getElementById('btnOpenManualOrderModal')?.click();
-      });
-    }
-
-    // Modal / Bottom Sheet 'Mais Opções' no celular
-    const moreModal = document.getElementById('moreOptionsModal');
-    const openMoreBtn = document.getElementById('btnOpenMobileMenu');
-    const closeMoreBtn = document.getElementById('btnCloseMoreOptionsModal');
-
-    if (openMoreBtn && moreModal) {
-      openMoreBtn.addEventListener('click', () => {
-        moreModal.classList.add('active');
-      });
-    }
-
-    if (closeMoreBtn && moreModal) {
-      closeMoreBtn.addEventListener('click', () => {
-        moreModal.classList.remove('active');
-      });
-    }
-
-    if (moreModal) {
-      moreModal.addEventListener('click', (e) => {
-        if (e.target === moreModal) {
-          moreModal.classList.remove('active');
-        }
-      });
-    }
-
-    // Opções de abas dentro do modal 'Mais Opções'
-    document.querySelectorAll('.more-opt-btn[data-tab]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.getAttribute('data-tab');
-        switchTab(tab);
-        moreModal?.classList.remove('active');
-      });
+    document.getElementById('sidebarBackupBtn')?.addEventListener('click', () => {
+      closeSidebar();
+      baixarBackupJSON();
     });
 
-    // Atalhos especiais dentro do modal 'Mais'
-    document.getElementById('btnSheetBackup')?.addEventListener('click', () => {
-      moreModal?.classList.remove('active');
-      document.getElementById('btnExportBackup')?.click();
-    });
-
-    document.getElementById('btnSheetLogout')?.addEventListener('click', () => {
-      moreModal?.classList.remove('active');
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', () => {
+      closeSidebar();
       document.getElementById('btnLogoutAdmin')?.click();
     });
+
+    // Listener para navegação com os botões de voltar/avançar do navegador
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) {
+        navigateToPage(hash, false);
+      }
+    });
+
+    // Rota inicial da URL ou padrão 'pedidos'
+    const initialPage = window.location.hash.replace('#', '') || 'pedidos';
+    navigateToPage(initialPage, false);
   }
 
   // ===================== EVENTOS DE FILTROS & BARRA DE FERRAMENTAS =====================
@@ -1520,7 +1588,7 @@
     downloadAnchor.click();
     downloadAnchor.remove();
 
-    showToast('Backup completo baixado com sucesso! 💾', 'success');
+    showToast('Backup completo baixado com sucesso!', 'success');
   }
 
   function imprimirResumoDoDia() {
@@ -1553,7 +1621,7 @@
         `).join('')}
         <div class="print-slip-divider"></div>
         <div class="print-slip-center" style="font-size:10px;">
-          Impresso em ${new Date().toLocaleTimeString('pt-BR')} 🤎
+          Impresso em ${new Date().toLocaleTimeString('pt-BR')}
         </div>
       </div>
     `;
@@ -1687,7 +1755,7 @@
       elNet.style.color = netProfit >= 0 ? '#2E7D32' : '#C62828';
     }
     if (elNetSub) {
-      elNetSub.textContent = netProfit >= 0 ? 'Limpo no seu bolso 🤎' : 'Atenção: despesas superam vendas';
+      elNetSub.textContent = netProfit >= 0 ? 'Lucro líquido apurado' : 'Atenção: despesas superam vendas';
     }
 
     if (elMargin) {
@@ -1796,7 +1864,7 @@
     }
 
     atualizarCustosELucro();
-    showToast('Custos dos produtos atualizados com sucesso! 🧁', 'success');
+    showToast('Custos dos produtos atualizados com sucesso!', 'success');
   }
 
   function renderizarDespesas() {
@@ -1812,7 +1880,7 @@
       tbody.innerHTML = `
         <tr>
           <td colspan="5" style="text-align:center; padding:24px; color:var(--chocolate-light);">
-            Nenhum gasto encontrado nesta categoria. Clique em <strong>"➕ Lançar Gasto"</strong> acima!
+            Nenhum gasto encontrado nesta categoria. Clique em <strong>"Lançar Gasto"</strong> acima!
           </td>
         </tr>
       `;
@@ -1826,10 +1894,10 @@
       let badgeClass = 'badge-outros';
       let catLabel = 'Outros';
 
-      if (cat === 'insumos') { badgeClass = 'badge-insumos'; catLabel = '🍫 Insumos'; }
-      else if (cat === 'embalagens') { badgeClass = 'badge-embalagens'; catLabel = '📦 Embalagens'; }
-      else if (cat === 'operacional') { badgeClass = 'badge-operacional'; catLabel = '💡 Operacional'; }
-      else if (cat === 'entrega') { badgeClass = 'badge-entrega'; catLabel = '🛵 Entrega'; }
+      if (cat === 'insumos') { badgeClass = 'badge-insumos'; catLabel = 'Insumos'; }
+      else if (cat === 'embalagens') { badgeClass = 'badge-embalagens'; catLabel = 'Embalagens'; }
+      else if (cat === 'operacional') { badgeClass = 'badge-operacional'; catLabel = 'Operacional'; }
+      else if (cat === 'entrega') { badgeClass = 'badge-entrega'; catLabel = 'Entrega'; }
 
       let dateFormatted = exp.data;
       if (dateFormatted && dateFormatted.includes('-')) {
@@ -1857,8 +1925,8 @@
             R$ ${valFormatted}
           </td>
           <td>
-            <button class="btn-action-icon" onclick="window.excluirDespesa('${exp.id}')" title="Excluir despesa" style="color:var(--red);">
-              🗑️
+            <button class="btn-action-icon" onclick="window.excluirDespesa('${exp.id}')" title="Excluir despesa" style="color:var(--red); display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; border:none; background:rgba(229,35,28,0.08); cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </td>
         </tr>
@@ -1957,7 +2025,7 @@
         form.reset();
         if (modal) modal.classList.remove('active');
         atualizarCustosELucro();
-        showToast('Despesa cadastrada com sucesso! 🧾', 'success');
+        showToast('Despesa cadastrada com sucesso!', 'success');
       });
     }
 
@@ -1988,7 +2056,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     initAuth();
     initSoundToggle();
-    initTabNav();
+    initNavigationRouter();
     initToolbarEvents();
     initManualOrder();
     initCardapioManage();
