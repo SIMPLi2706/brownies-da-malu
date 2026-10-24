@@ -1070,105 +1070,283 @@
   }
 
   // ===================== ABA 3: CLIENTES (CRM) =====================
+  function initCrmControls() {
+    // 1. Pílulas de filtro do CRM (Todos, Fiéis, Novos)
+    const pills = document.querySelectorAll('#crmFilterPills .status-pill[data-crm-filter]');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        AdminState.currentCrmFilter = pill.getAttribute('data-crm-filter');
+        renderizarClientes();
+      });
+    });
+
+    // 2. Alternador de visualização Cards / Tabela
+    const btnCards = document.getElementById('btnViewModeCards');
+    const btnTable = document.getElementById('btnViewModeTable');
+    const cardsGrid = document.getElementById('clientsCardsGrid');
+    const tableView = document.getElementById('clientsTableView');
+
+    if (btnCards && btnTable && cardsGrid && tableView) {
+      btnCards.addEventListener('click', () => {
+        btnCards.classList.add('active');
+        btnTable.classList.remove('active');
+        cardsGrid.classList.remove('hidden');
+        tableView.classList.add('hidden');
+      });
+
+      btnTable.addEventListener('click', () => {
+        btnTable.classList.add('active');
+        btnCards.classList.remove('active');
+        tableView.classList.remove('hidden');
+        cardsGrid.classList.add('hidden');
+      });
+    }
+
+    // 3. Botão Nova Venda na página do CRM
+    document.getElementById('btnCrmNewOrder')?.addEventListener('click', () => {
+      document.getElementById('btnOpenManualOrderModal')?.click();
+    });
+  }
+
   function renderizarClientes() {
+    const cardsGrid = document.getElementById('clientsCardsGrid');
     const tbody = document.getElementById('clientsTableBody');
-    if (!tbody) return;
+    if (!cardsGrid && !tbody) return;
 
-    // Constrói clientes a partir dos perfis cadastrados e dos pedidos realizados
+    // Constrói mapa unificado de clientes a partir dos perfis e de todos os pedidos
     const clientsMap = {};
+    const neighborhoodsSet = new Set();
 
-    AdminState.clients.forEach(c => {
-      const key = c.telefone || c.nome || c.id;
+    (AdminState.clients || []).forEach(c => {
+      const key = (c.telefone || c.nome || c.id || '').trim();
+      if (!key) return;
+      if (c.bairro && c.bairro !== 'Não informado' && c.bairro !== 'Porto Velho') {
+        neighborhoodsSet.add(c.bairro);
+      }
+
       clientsMap[key] = {
+        id: c.id,
         nome: c.nome || 'Cliente',
         telefone: c.telefone || '',
         bairro: c.bairro || 'Porto Velho',
-        endereco: c.endereco ? `${c.endereco}, ${c.numero || ''}` : 'Não informado',
-        totalOrders: 0
+        endereco: c.endereco ? `${c.endereco}${c.numero ? ', ' + c.numero : ''}` : 'Não informado',
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrderDate: null
       };
     });
 
-    AdminState.orders.forEach(o => {
-      const key = o.telefone_cliente || o.nome_cliente;
+    (AdminState.orders || []).forEach(o => {
+      const key = (o.telefone_cliente || o.nome_cliente || '').trim();
+      if (!key) return;
+
       if (!clientsMap[key]) {
+        let b = 'Porto Velho';
+        const end = o.endereco_entrega || '';
+        if (end.toLowerCase().includes('bairro')) {
+          const match = end.match(/bairro\s*([^,-]+)/i);
+          if (match && match[1]) b = match[1].trim();
+        }
+        if (b && b !== 'Porto Velho') neighborhoodsSet.add(b);
+
         clientsMap[key] = {
           nome: o.nome_cliente || 'Cliente',
           telefone: o.telefone_cliente || '',
-          bairro: 'Porto Velho',
-          endereco: o.endereco_entrega || 'Não informado',
-          totalOrders: 0
+          bairro: b,
+          endereco: o.endereco_entrega || (o.tipo_entrega === 'retirada' ? 'Retirada no local' : 'Não informado'),
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrderDate: null
         };
       }
+
       clientsMap[key].totalOrders++;
+      clientsMap[key].totalSpent += (parseFloat(o.valor_total) || 0);
+      if (!clientsMap[key].lastOrderDate || new Date(o.criado_em) > new Date(clientsMap[key].lastOrderDate)) {
+        clientsMap[key].lastOrderDate = o.criado_em;
+      }
     });
 
-    let clientsList = Object.values(clientsMap);
+    const allClients = Object.values(clientsMap);
+    const totalCount = allClients.length;
+    const vipCount = allClients.filter(c => c.totalOrders >= 2).length;
+    const newCount = allClients.filter(c => c.totalOrders < 2).length;
 
-    // Filtro de busca de clientes
-    const q = (document.getElementById('clientSearchInput')?.value || '').toLowerCase();
+    // Atualiza KPIs do CRM
+    const elTotal = document.getElementById('crmTotalClientsCount');
+    if (elTotal) elTotal.textContent = totalCount;
+    const elVip = document.getElementById('crmVipClientsCount');
+    if (elVip) elVip.textContent = vipCount;
+    const elNeigh = document.getElementById('crmNeighborhoodsCount');
+    if (elNeigh) elNeigh.textContent = neighborhoodsSet.size || (totalCount > 0 ? 1 : 0);
+
+    // Atualiza contadores das pílulas de filtro
+    const pillAll = document.getElementById('pillCountAllClients');
+    if (pillAll) pillAll.textContent = totalCount;
+    const pillVip = document.getElementById('pillCountVipClients');
+    if (pillVip) pillVip.textContent = vipCount;
+    const pillNew = document.getElementById('pillCountNewClients');
+    if (pillNew) pillNew.textContent = newCount;
+
+    // Filtro por categoria (Todos, Fiéis, Novos)
+    let filtered = allClients;
+    const currentFilter = AdminState.currentCrmFilter || 'todos';
+    if (currentFilter === 'fieis') {
+      filtered = filtered.filter(c => c.totalOrders >= 2);
+    } else if (currentFilter === 'novos') {
+      filtered = filtered.filter(c => c.totalOrders < 2);
+    }
+
+    // Filtro de busca por texto
+    const q = (document.getElementById('clientSearchInput')?.value || '').trim().toLowerCase();
     if (q) {
-      clientsList = clientsList.filter(c => 
-        c.nome.toLowerCase().includes(q) || 
-        c.telefone.toLowerCase().includes(q) || 
-        c.bairro.toLowerCase().includes(q)
+      filtered = filtered.filter(c => 
+        (c.nome || '').toLowerCase().includes(q) || 
+        (c.telefone || '').toLowerCase().includes(q) || 
+        (c.bairro || '').toLowerCase().includes(q) ||
+        (c.endereco || '').toLowerCase().includes(q)
       );
     }
 
-    if (clientsList.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align:center; padding:30px; color:#888;">
-            Nenhum cliente encontrado.
-          </td>
-        </tr>
+    // Ordena: clientes fiéis com mais pedidos no topo
+    filtered.sort((a, b) => b.totalOrders - a.totalOrders || b.totalSpent - a.totalSpent);
+
+    // Estado vazio
+    if (filtered.length === 0) {
+      const emptyHtml = `
+        <div class="empty-state" style="grid-column: 1 / -1; padding: 48px 20px; text-align: center;">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3 style="font-family:'Baloo 2', sans-serif; font-size:1.35rem; color:var(--chocolate-darkest); margin:12px 0 6px;">Nenhum cliente encontrado</h3>
+          <p style="color:var(--chocolate-light); font-size:0.92rem; max-width:400px; margin:0 auto;">
+            ${q ? 'Nenhum resultado corresponde à sua busca. Tente buscar por outro termo.' : 'Assim que clientes realizarem pedidos na loja, eles serão organizados automaticamente aqui!'}
+          </p>
+        </div>
       `;
+      if (cardsGrid) cardsGrid.innerHTML = emptyHtml;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--chocolate-light);">Nenhum cliente encontrado com os filtros atuais.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = clientsList.map(c => {
-      const initials = (c.nome || 'C').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-      const cleanPhone = (c.telefone || '').replace(/\D/g, '');
+    // 1. Renderiza Cards Responsivos
+    if (cardsGrid) {
+      cardsGrid.innerHTML = filtered.map(c => {
+        const initials = (c.nome || 'C').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'C';
+        const cleanPhone = (c.telefone || '').replace(/\D/g, '');
+        const isVip = c.totalOrders >= 2;
+        const totalSpentFormatted = c.totalSpent.toFixed(2).replace('.', ',');
 
-      return `
-        <tr>
-          <td>
-            <div class="client-avatar-cell">
-              <div class="client-avatar">${initials}</div>
-              <div>
-                <strong>${escapeHtml(c.nome)}</strong>
+        return `
+          <div class="customer-card ${isVip ? 'customer-card-vip' : ''}">
+            <div class="customer-card-header">
+              <div class="customer-avatar">${initials}</div>
+              <div class="customer-header-info">
+                <div class="customer-card-name" title="${escapeHtml(c.nome)}">${escapeHtml(c.nome)}</div>
+                ${isVip ? `
+                  <span class="badge-client-vip">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#B45309" stroke="#B45309"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Fã da Malu (${c.totalOrders} pedidos)</span>
+                  </span>
+                ` : c.totalOrders === 1 ? `
+                  <span class="badge-client-single">1 pedido realizado</span>
+                ` : `
+                  <span class="badge-client-new">Cadastrado</span>
+                `}
               </div>
             </div>
-          </td>
-          <td>
-            ${c.telefone ? `
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span>${escapeHtml(c.telefone)}</span>
-                <a href="https://wa.me/55${cleanPhone}" target="_blank" rel="noopener" class="btn-wa-direct" style="padding:2px 8px; font-size:0.75rem;">
-                  WhatsApp
-                </a>
-              </div>
-            ` : 'Não informado'}
-          </td>
-          <td>${escapeHtml(c.bairro)}</td>
-          <td><small>${escapeHtml(c.endereco)}</small></td>
-          <td><strong>${c.totalOrders}</strong> pedido${c.totalOrders === 1 ? '' : 's'}</td>
-          <td>
-            <button type="button" class="btn-toolbar btn-quick-order-client" data-name="${escapeHtml(c.nome)}" data-phone="${escapeHtml(c.telefone)}" style="padding:4px 10px; font-size:0.78rem; display:inline-flex; align-items:center; gap:5px;">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>Novo Pedido</span>
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join('');
 
-    tbody.querySelectorAll('.btn-quick-order-client').forEach(btn => {
+            <div class="customer-contact-row">
+              ${c.telefone ? `
+                <a href="https://wa.me/55${cleanPhone}" target="_blank" rel="noopener" class="customer-wa-pill" title="Conversar no WhatsApp">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  <span>${escapeHtml(c.telefone)}</span>
+                </a>
+              ` : `
+                <span style="font-size:0.82rem; color:var(--chocolate-light); font-style:italic;">Telefone não informado</span>
+              `}
+            </div>
+
+            <div class="customer-location-box">
+              <span class="customer-location-icon">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <div class="customer-location-text">
+                <strong>${escapeHtml(c.bairro)}</strong><br>
+                <span>${escapeHtml(c.endereco)}</span>
+              </div>
+            </div>
+
+            <div class="customer-stats-strip">
+              <span>Total Comprado: <strong class="customer-stats-val">R$ ${totalSpentFormatted}</strong></span>
+              <span><strong>${c.totalOrders}</strong> ${c.totalOrders === 1 ? 'pedido' : 'pedidos'}</span>
+            </div>
+
+            <div class="customer-card-actions">
+              <button type="button" class="btn-customer-new-order" data-name="${escapeHtml(c.nome)}" data-phone="${escapeHtml(c.telefone)}">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Registrar Venda</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2. Renderiza Tabela Desktop
+    if (tbody) {
+      tbody.innerHTML = filtered.map(c => {
+        const initials = (c.nome || 'C').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'C';
+        const cleanPhone = (c.telefone || '').replace(/\D/g, '');
+        const isVip = c.totalOrders >= 2;
+
+        return `
+          <tr>
+            <td>
+              <div class="client-avatar-cell">
+                <div class="client-avatar">${initials}</div>
+                <div>
+                  <strong>${escapeHtml(c.nome)}</strong>
+                  ${isVip ? '<br><small style="color:#B45309; font-weight:700;"><svg viewBox="0 0 24 24" width="11" height="11" fill="#B45309" stroke="#B45309" style="vertical-align:-1px; margin-right:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Fã da Malu</small>' : ''}
+                </div>
+              </div>
+            </td>
+            <td>
+              ${c.telefone ? `
+                <a href="https://wa.me/55${cleanPhone}" target="_blank" rel="noopener" class="customer-wa-pill" style="padding:4px 10px; font-size:0.8rem;">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  <span>${escapeHtml(c.telefone)}</span>
+                </a>
+              ` : '<span style="color:#888;">Não informado</span>'}
+            </td>
+            <td><strong>${escapeHtml(c.bairro)}</strong></td>
+            <td><small style="color:var(--chocolate-light);">${escapeHtml(c.endereco)}</small></td>
+            <td><strong>${c.totalOrders}</strong> pedido${c.totalOrders === 1 ? '' : 's'}</td>
+            <td>
+              <button type="button" class="btn-customer-new-order btn-quick-order-client" data-name="${escapeHtml(c.nome)}" data-phone="${escapeHtml(c.telefone)}" style="padding:6px 12px; font-size:0.8rem;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Venda</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Eventos dos botões de nova venda para cliente
+    document.querySelectorAll('.btn-customer-new-order, .btn-quick-order-client').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.getElementById('btnOpenManualOrderModal').click();
+        const name = btn.getAttribute('data-name');
+        const phone = btn.getAttribute('data-phone');
+        document.getElementById('btnOpenManualOrderModal')?.click();
         setTimeout(() => {
-          document.getElementById('manualCustName').value = btn.getAttribute('data-name');
-          document.getElementById('manualCustPhone').value = btn.getAttribute('data-phone');
-        }, 100);
+          const inName = document.getElementById('manualCustName');
+          const inPhone = document.getElementById('manualCustPhone');
+          if (inName) inName.value = name || '';
+          if (inPhone) inPhone.value = phone || '';
+        }, 120);
       });
     });
   }
@@ -1197,26 +1375,63 @@
     const grid = document.getElementById('menuManageGrid');
     if (!grid) return;
 
+    let availableCount = 0;
+    let outOfStockCount = 0;
+
+    AdminState.flavors.forEach(f => {
+      if (AdminState.stockStatus[f.name] === false) {
+        outOfStockCount++;
+      } else {
+        availableCount++;
+      }
+    });
+
+    // Atualiza contadores no topo
+    const elTotal = document.getElementById('menuCountTotal');
+    if (elTotal) elTotal.textContent = AdminState.flavors.length;
+    const elAvail = document.getElementById('menuCountAvailable');
+    if (elAvail) elAvail.textContent = availableCount;
+    const elOut = document.getElementById('menuCountOutOfStock');
+    if (elOut) elOut.textContent = outOfStockCount;
+
     grid.innerHTML = AdminState.flavors.map(f => {
       const isOutOfStock = AdminState.stockStatus[f.name] === false;
+      const isPote = (f.name || '').toLowerCase().includes('pote');
+      const categoryTag = isPote ? 'Brownie no Pote' : 'Gourmet Artesanal';
 
       return `
-        <div class="menu-manage-card ${isOutOfStock ? 'out-of-stock' : ''}">
-          <div class="menu-card-img-wrap">
-            <img src="${f.img}" alt="${f.name}">
-            <span class="stock-badge ${isOutOfStock ? 'badge-out-stock' : 'badge-in-stock'}">
-              ${isOutOfStock ? 'Esgotado Hoje' : 'Disponível'}
-            </span>
+        <div class="menu-manage-card ${isOutOfStock ? 'out-of-stock' : 'in-stock'}">
+          <div class="menu-card-media">
+            <img src="${f.img}" alt="${escapeHtml(f.name)}" loading="lazy">
+            <div class="menu-card-overlay-gradient"></div>
+            
+            <div class="menu-card-floating-badge">
+              <span class="stock-indicator-pill ${isOutOfStock ? 'pill-out' : 'pill-in'}">
+                <span class="status-pulse-dot ${isOutOfStock ? 'dot-red' : 'dot-green'}"></span>
+                <span>${isOutOfStock ? 'Esgotado Hoje' : 'Disponível no Site'}</span>
+              </span>
+            </div>
+
+            <span class="menu-card-category-tag">${categoryTag}</span>
           </div>
 
-          <div class="menu-card-body">
-            <h4 class="menu-card-title">${escapeHtml(f.name)}</h4>
-            <p class="menu-card-desc">${escapeHtml(f.desc)}</p>
-            
-            <div class="menu-card-foot">
+          <div class="menu-card-content">
+            <div class="menu-card-header-row">
+              <h3 class="menu-card-title">${escapeHtml(f.name)}</h3>
               <span class="menu-card-price">${f.price}</span>
-              <button type="button" class="toggle-stock-btn ${isOutOfStock ? 'active' : ''}" data-name="${escapeHtml(f.name)}">
-                ${isOutOfStock ? 'Tornar Disponível' : 'Marcar Esgotado'}
+            </div>
+
+            <p class="menu-card-desc">${escapeHtml(f.desc)}</p>
+
+            <div class="menu-card-action-bar">
+              <button type="button" class="btn-toggle-stock ${isOutOfStock ? 'btn-stock-enable' : 'btn-stock-disable'}" data-name="${escapeHtml(f.name)}">
+                ${isOutOfStock ? `
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                  <span>Tornar Disponível na Loja</span>
+                ` : `
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  <span>Pausar / Marcar Esgotado</span>
+                `}
               </button>
             </div>
           </div>
@@ -1224,7 +1439,8 @@
       `;
     }).join('');
 
-    grid.querySelectorAll('.toggle-stock-btn').forEach(btn => {
+    // Eventos dos botões de alternância de estoque
+    grid.querySelectorAll('.btn-toggle-stock').forEach(btn => {
       btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-name');
         const current = AdminState.stockStatus[name] !== false; // true por padrão
@@ -1233,8 +1449,8 @@
         
         showToast(
           AdminState.stockStatus[name] 
-            ? `Sabor "${name}" marcado como DISPONÍVEL!` 
-            : `Sabor "${name}" marcado como ESGOTADO HOJE`,
+            ? `Sabor "${name}" reativado na loja online!` 
+            : `Sabor "${name}" marcado como ESGOTADO HOJE.`,
           'info'
         );
         renderizarCardapio();
@@ -2083,6 +2299,7 @@
     initSoundToggle();
     initNavigationRouter();
     initToolbarEvents();
+    initCrmControls();
     initManualOrder();
     initCardapioManage();
     initExpensesAndCosts();
