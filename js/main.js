@@ -760,19 +760,24 @@
         console.warn('Gravando pedido via WhatsApp fallback:', err);
       }
 
-      let msg = `*Pedido ${codigoPedido} - Brownie da Malu*\n\n`;
+      const agora = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+      let msg = `🔔 *NOVO PEDIDO NO SITE - Brownie da Malu* 🤎\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `🏷️ *Código:* ${codigoPedido}\n`;
+      msg += `🕐 *Horário:* ${agora}\n\n`;
       msg += `🍫 *Item:* ${currentQty}x ${currentOrderFlavor.name}\n`;
-      msg += `💰 *Total Estimado:* ${totalFormatado}\n`;
+      msg += `💰 *Total:* ${totalFormatado}\n\n`;
       msg += `👤 *Cliente:* ${nomeCliente}\n`;
       msg += `📞 *WhatsApp:* ${telefoneCliente}\n`;
-      msg += `🛵 *Modalidade:* ${tipoEntrega === 'retirada' ? 'Retirada no local' : 'Entrega em domicílio'}\n`;
+      msg += `🛵 *Entrega:* ${tipoEntrega === 'retirada' ? 'Retirada no local' : 'Entrega em domicílio'}\n`;
       if (tipoEntrega === 'entrega' && enderecoEntrega) {
         msg += `📍 *Endereço:* ${enderecoEntrega}\n`;
       }
       if (observacoes) {
         msg += `📝 *Obs:* ${observacoes}\n`;
       }
-      msg += `\n_Pedido registrado no site. Podemos confirmar?_`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `_Pedido feito no site. Confirme com o cliente! 🤎_`;
 
       fecharModal('orderModal');
       showToast(`Pedido ${codigoPedido} registrado com sucesso! 🤎`, 'success');
@@ -918,24 +923,29 @@
         console.warn('Erro ao salvar no Supabase, prosseguindo com WhatsApp:', err);
       }
 
-      // Monta texto formatado e elegante para o WhatsApp
-      let msg = `*Pedido ${codigoPedido} - Brownie da Malu*\n\n`;
-      msg += `🛍️ *Itens da Sacola:*\n`;
+      // Monta notificação clara para a Malu
+      const agora2 = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+      let msg = `🔔 *NOVO PEDIDO NO SITE - Brownie da Malu* 🤎\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `🏷️ *Código:* ${codigoPedido}\n`;
+      msg += `🕐 *Horário:* ${agora2}\n\n`;
+      msg += `🛍️ *Itens do Pedido:*\n`;
       entries.forEach(it => {
         const sub = `R$ ${(it.flavor.rawPrice * it.qty).toFixed(2).replace('.', ',')}`;
         msg += `• ${it.qty}x ${it.flavor.name} (${sub})\n`;
       });
-      msg += `\n💰 *Total Estimado:* ${totalFormatado}\n`;
+      msg += `\n💰 *Total:* ${totalFormatado}\n\n`;
       msg += `👤 *Cliente:* ${nomeCliente}\n`;
       msg += `📞 *WhatsApp:* ${telefoneCliente}\n`;
-      msg += `🛵 *Modalidade:* ${tipoEntrega === 'retirada' ? 'Retirada no local' : 'Entrega em domicílio'}\n`;
+      msg += `🛵 *Entrega:* ${tipoEntrega === 'retirada' ? 'Retirada no local' : 'Entrega em domicílio'}\n`;
       if (tipoEntrega === 'entrega') {
         msg += `📍 *Endereço:* ${enderecoFormatado}\n`;
       }
       if (obs) {
         msg += `📝 *Observações:* ${obs}\n`;
       }
-      msg += `\n_Pedido gerado na sacola do site. Aguardo confirmação!_ 🍫`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `_Pedido feito no site. Confirme com o cliente! 🤎_`;
 
       // Limpa sacola e fecha modal
       BrownieCart.clear();
