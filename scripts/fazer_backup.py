@@ -31,7 +31,7 @@ def main():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     print(f"[{timestamp}] Iniciando backup do Brownie da Malu...")
 
-    tables = ["pedidos", "perfis", "depoimentos"]
+    tables = ["pedidos", "perfis", "depoimentos", "despesas", "custos_produtos"]
     summary = {}
 
     for t in tables:
@@ -52,7 +52,10 @@ def main():
             summary[t] = len(data)
             print(f"  ✓ {t}: {len(data)} registros salvos.")
         except Exception as e:
-            print(f"  ✗ Erro ao fazer backup de {t}: {e}")
+            if "404" in str(e):
+                print(f"  ℹ {t}: tabela ainda não criada no Supabase (será sincronizada após executar o script SQL).")
+            else:
+                print(f"  ✗ Erro ao fazer backup de {t}: {e}")
 
     print(f"Backup concluído com sucesso em: {BACKUP_DIR}")
 

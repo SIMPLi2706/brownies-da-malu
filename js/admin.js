@@ -16,6 +16,17 @@
     searchQuery: '',
     selectedOrderForWa: null,
     stockStatus: {}, // { [name]: false (esgotado) | true (disponível) }
+    expenses: [],
+    expenseCategoryFilter: 'todas',
+    productCosts: {
+      "Brownie no Pote — Dois Amores": 6.50,
+      "Brownie no Pote — Chocolate Tradicional": 6.00,
+      "Brownie no Pote — Doce de Leite com Ninho": 6.20,
+      "Chocolate com Maracujá": 5.00,
+      "Ninho com Morango": 5.20,
+      "Chocolate Tradicional": 4.00,
+      "Brownie de Paçoca": 4.20
+    },
     
     // Lista base de sabores para controle de cardápio e pedido manual
     flavors: [
@@ -297,9 +308,11 @@
         AdminState.reviews = depoimentos;
       }
 
+      await carregarCustosEDespesas();
     } catch (e) {
       console.error('Falha na sincronização com Supabase:', e);
       carregarPedidosLocais();
+      await carregarCustosEDespesas();
     }
 
     atualizarTodaUI();
@@ -432,6 +445,7 @@
     renderizarClientes();
     renderizarCardapio();
     renderizarDepoimentos();
+    atualizarCustosELucro();
   }
 
   // 1. KPIs e Métricas
@@ -1425,11 +1439,14 @@
       estatisticas: {
         total_pedidos: AdminState.orders.length,
         total_clientes: AdminState.clients.length,
-        total_depoimentos: AdminState.reviews.length
+        total_depoimentos: AdminState.reviews.length,
+        total_despesas: (AdminState.expenses || []).length
       },
       pedidos: AdminState.orders,
       clientes: AdminState.clients,
-      depoimentos: AdminState.reviews
+      depoimentos: AdminState.reviews,
+      custos_produtos: AdminState.productCosts,
+      despesas: AdminState.expenses
     };
 
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
@@ -1482,6 +1499,451 @@
     window.print();
   }
 
+  // ===================== GESTÃO FINANCEIRA (CUSTOS & LUCRO LÍQUIDO) =====================
+  async function carregarCustosEDespesas() {
+    // 1. Custos Unitários dos Produtos
+    try {
+      const savedCosts = localStorage.getItem('brownie_product_costs');
+      if (savedCosts) {
+        AdminState.productCosts = Object.assign({}, AdminState.productCosts, JSON.parse(savedCosts));
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar custos locais:', e);
+    }
+
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data: dbCosts, error: errCosts } = await sb.from('custos_produtos').select('*');
+        if (!errCosts && dbCosts && dbCosts.length > 0) {
+          dbCosts.forEach(row => {
+            if (row.sabor && row.custo_unitario !== undefined) {
+              AdminState.productCosts[row.sabor] = parseFloat(row.custo_unitario);
+            }
+          });
+        }
+      } catch (e) {
+        // Fallback silencioso se a tabela custos_produtos ainda não foi criada no Supabase
+      }
+    }
+
+    // 2. Despesas Operacionais
+    try {
+      const savedExp = localStorage.getItem('brownie_expenses');
+      if (savedExp) {
+        AdminState.expenses = JSON.parse(savedExp);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar despesas locais:', e);
+    }
+
+    if (sb) {
+      try {
+        const { data: dbExp, error: errExp } = await sb.from('despesas').select('*').order('data_despesa', { ascending: false });
+        if (!errExp && dbExp && dbExp.length > 0) {
+          AdminState.expenses = dbExp.map(d => ({
+            id: d.id,
+            descricao: d.descricao,
+            categoria: d.categoria || 'outros',
+            valor: parseFloat(d.valor) || 0,
+            data: d.data_despesa || (d.criado_em ? d.criado_em.slice(0, 10) : ''),
+            observacao: d.observacoes || '',
+            criado_em: d.criado_em
+          }));
+        }
+      } catch (e) {
+        // Fallback se a tabela despesas não foi criada no Supabase
+      }
+    }
+
+    // Se estiver vazio no primeiro acesso da Malu, inicializar com exemplos reais
+    if (!AdminState.expenses || AdminState.expenses.length === 0) {
+      AdminState.expenses = [
+        {
+          id: 'exp-1',
+          descricao: 'Caixa de Leite Condensado Moça (27 un)',
+          valor: 165.00,
+          categoria: 'insumos',
+          data: new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10),
+          observacao: 'Atacadão',
+          criado_em: new Date(Date.now() - 86400000 * 2).toISOString()
+        },
+        {
+          id: 'exp-2',
+          descricao: 'Cento de Potes 250ml + Colheres descartáveis',
+          valor: 58.00,
+          categoria: 'embalagens',
+          data: new Date(Date.now() - 86400000 * 4).toISOString().slice(0, 10),
+          observacao: 'Embalagens Plastil',
+          criado_em: new Date(Date.now() - 86400000 * 4).toISOString()
+        }
+      ];
+      try {
+        localStorage.setItem('brownie_expenses', JSON.stringify(AdminState.expenses));
+      } catch (e) {}
+    }
+  }
+
+  function getProductUnitCost(flavorName) {
+    if (!flavorName) return 5.00;
+    if (AdminState.productCosts[flavorName] !== undefined) {
+      return parseFloat(AdminState.productCosts[flavorName]) || 0;
+    }
+    const clean = flavorName.toLowerCase().trim();
+    for (const [key, val] of Object.entries(AdminState.productCosts)) {
+      if (key.toLowerCase().trim() === clean) return parseFloat(val) || 0;
+    }
+    for (const [key, val] of Object.entries(AdminState.productCosts)) {
+      if (clean.includes(key.toLowerCase()) || key.toLowerCase().includes(clean)) {
+        return parseFloat(val) || 0;
+      }
+    }
+    return 5.00;
+  }
+
+  function atualizarCustosELucro() {
+    let grossRev = 0;
+    let cpvTotal = 0;
+    let validOrders = 0;
+
+    AdminState.orders.forEach(o => {
+      const status = (o.status || 'pendente').toLowerCase();
+      if (status !== 'cancelado') {
+        const val = parseFloat(o.valor_total) || 0;
+        grossRev += val;
+        validOrders++;
+
+        const items = Array.isArray(o.itens) ? o.itens : [];
+        items.forEach(it => {
+          const qty = parseInt(it.quantidade, 10) || 1;
+          const name = it.sabor || it.name || '';
+          const unitCost = getProductUnitCost(name);
+          cpvTotal += (unitCost * qty);
+        });
+      }
+    });
+
+    const expensesTotal = (AdminState.expenses || []).reduce((sum, exp) => sum + (parseFloat(exp.valor) || 0), 0);
+    const totalCustos = cpvTotal + expensesTotal;
+    const netProfit = grossRev - totalCustos;
+    const netMargin = grossRev > 0 ? ((netProfit / grossRev) * 100) : 0;
+
+    const elRev = document.getElementById('kpiCustosRevenue');
+    const elRevSub = document.getElementById('kpiCustosRevenueSub');
+    const elCustos = document.getElementById('kpiCustosTotal');
+    const elCustosSub = document.getElementById('kpiCustosTotalSub');
+    const elNet = document.getElementById('kpiNetProfit');
+    const elNetSub = document.getElementById('kpiNetProfitSub');
+    const elMargin = document.getElementById('kpiNetMargin');
+
+    if (elRev) elRev.textContent = `R$ ${grossRev.toFixed(2).replace('.', ',')}`;
+    if (elRevSub) elRevSub.textContent = `${validOrders} pedido${validOrders === 1 ? '' : 's'} faturado${validOrders === 1 ? '' : 's'}`;
+
+    if (elCustos) elCustos.textContent = `R$ ${totalCustos.toFixed(2).replace('.', ',')}`;
+    if (elCustosSub) elCustosSub.textContent = `R$ ${cpvTotal.toFixed(2).replace('.', ',')} insumos + R$ ${expensesTotal.toFixed(2).replace('.', ',')} despesas`;
+
+    if (elNet) {
+      elNet.textContent = `R$ ${netProfit.toFixed(2).replace('.', ',')}`;
+      elNet.style.color = netProfit >= 0 ? '#2E7D32' : '#C62828';
+    }
+    if (elNetSub) {
+      elNetSub.textContent = netProfit >= 0 ? 'Limpo no seu bolso 🤎' : 'Atenção: despesas superam vendas';
+    }
+
+    if (elMargin) {
+      elMargin.textContent = `${netMargin.toFixed(1).replace('.', ',')}%`;
+      elMargin.className = `kpi-value ${netMargin >= 0 ? 'profit-positive' : 'profit-negative'}`;
+    }
+
+    renderizarFichaCustosProdutos();
+    renderizarDespesas();
+  }
+
+  function renderizarFichaCustosProdutos() {
+    const tbody = document.getElementById('productCostsTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = AdminState.flavors.map(flavor => {
+      const salePrice = flavor.rawPrice || parseFloat(String(flavor.price).replace(/[^\d.,]/g, '').replace(',', '.')) || 12;
+      const cost = getProductUnitCost(flavor.name);
+      const unitProfit = salePrice - cost;
+      const margin = salePrice > 0 ? (unitProfit / salePrice * 100).toFixed(0) : 0;
+      const profitClass = unitProfit >= 0 ? 'profit-positive' : 'profit-negative';
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(flavor.name)}</strong>
+          </td>
+          <td>
+            <span style="font-weight:700;">R$ ${salePrice.toFixed(2).replace('.', ',')}</span>
+          </td>
+          <td>
+            <div class="cost-input-wrap">
+              <span style="color:var(--chocolate-light); font-size:0.8rem;">R$</span>
+              <input type="number" 
+                     step="0.10" 
+                     min="0" 
+                     class="cost-input-field" 
+                     data-flavor="${escapeHtml(flavor.name)}" 
+                     data-price="${salePrice}"
+                     value="${cost.toFixed(2)}">
+            </div>
+          </td>
+          <td>
+            <span class="${profitClass}" id="unitProfit_${escapeHtml(flavor.name).replace(/\W/g, '_')}">
+              R$ ${unitProfit.toFixed(2).replace('.', ',')}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${margin >= 40 ? 'badge-green' : 'badge-yellow'}" id="unitMargin_${escapeHtml(flavor.name).replace(/\W/g, '_')}">
+              ${margin}%
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('.cost-input-field').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const flavorName = e.target.getAttribute('data-flavor');
+        const price = parseFloat(e.target.getAttribute('data-price')) || 0;
+        const newCost = parseFloat(e.target.value) || 0;
+        const profit = price - newCost;
+        const margin = price > 0 ? ((profit / price) * 100).toFixed(0) : 0;
+
+        const safeId = flavorName.replace(/\W/g, '_');
+        const profitEl = document.getElementById(`unitProfit_${safeId}`);
+        const marginEl = document.getElementById(`unitMargin_${safeId}`);
+
+        if (profitEl) {
+          profitEl.textContent = `R$ ${profit.toFixed(2).replace('.', ',')}`;
+          profitEl.className = profit >= 0 ? 'profit-positive' : 'profit-negative';
+        }
+        if (marginEl) {
+          marginEl.textContent = `${margin}%`;
+          marginEl.className = `badge ${margin >= 40 ? 'badge-green' : 'badge-yellow'}`;
+        }
+      });
+    });
+  }
+
+  async function salvarCustosProdutos() {
+    const tbody = document.getElementById('productCostsTableBody');
+    if (!tbody) return;
+
+    const inputs = tbody.querySelectorAll('.cost-input-field');
+    const updates = [];
+
+    inputs.forEach(inp => {
+      const flavorName = inp.getAttribute('data-flavor');
+      const costVal = parseFloat(inp.value) || 0;
+      AdminState.productCosts[flavorName] = costVal;
+      updates.push({ sabor: flavorName, custo_unitario: costVal, atualizado_em: new Date().toISOString() });
+    });
+
+    try {
+      localStorage.setItem('brownie_product_costs', JSON.stringify(AdminState.productCosts));
+    } catch (e) {
+      console.warn('Erro ao salvar custos no localStorage:', e);
+    }
+
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        await sb.from('custos_produtos').upsert(updates);
+      } catch (e) {}
+    }
+
+    atualizarCustosELucro();
+    showToast('Custos dos produtos atualizados com sucesso! 🧁', 'success');
+  }
+
+  function renderizarDespesas() {
+    const tbody = document.getElementById('expensesTableBody');
+    if (!tbody) return;
+
+    let list = AdminState.expenses || [];
+    if (AdminState.expenseCategoryFilter && AdminState.expenseCategoryFilter !== 'todas') {
+      list = list.filter(e => (e.categoria || 'outros').toLowerCase() === AdminState.expenseCategoryFilter.toLowerCase());
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding:24px; color:var(--chocolate-light);">
+            Nenhum gasto encontrado nesta categoria. Clique em <strong>"➕ Lançar Gasto"</strong> acima!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const sorted = [...list].sort((a, b) => new Date(b.data || b.criado_em || 0) - new Date(a.data || a.criado_em || 0));
+
+    tbody.innerHTML = sorted.map(exp => {
+      const cat = (exp.categoria || 'outros').toLowerCase();
+      let badgeClass = 'badge-outros';
+      let catLabel = 'Outros';
+
+      if (cat === 'insumos') { badgeClass = 'badge-insumos'; catLabel = '🍫 Insumos'; }
+      else if (cat === 'embalagens') { badgeClass = 'badge-embalagens'; catLabel = '📦 Embalagens'; }
+      else if (cat === 'operacional') { badgeClass = 'badge-operacional'; catLabel = '💡 Operacional'; }
+      else if (cat === 'entrega') { badgeClass = 'badge-entrega'; catLabel = '🛵 Entrega'; }
+
+      let dateFormatted = exp.data;
+      if (dateFormatted && dateFormatted.includes('-')) {
+        const parts = dateFormatted.split('-');
+        if (parts.length === 3) dateFormatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      } else if (exp.criado_em) {
+        dateFormatted = new Date(exp.criado_em).toLocaleDateString('pt-BR');
+      }
+
+      const valFormatted = (parseFloat(exp.valor) || 0).toFixed(2).replace('.', ',');
+
+      return `
+        <tr>
+          <td style="white-space:nowrap; font-size:0.8rem; color:var(--chocolate-light);">
+            ${dateFormatted || '-'}
+          </td>
+          <td>
+            <strong>${escapeHtml(exp.descricao)}</strong>
+            ${exp.observacao ? `<br><small style="color:var(--chocolate-light);">${escapeHtml(exp.observacao)}</small>` : ''}
+          </td>
+          <td>
+            <span class="badge-expense-category ${badgeClass}">${catLabel}</span>
+          </td>
+          <td style="font-weight:800; color:var(--red); white-space:nowrap;">
+            R$ ${valFormatted}
+          </td>
+          <td>
+            <button class="btn-action-icon" onclick="window.excluirDespesa('${exp.id}')" title="Excluir despesa" style="color:var(--red);">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function initExpensesAndCosts() {
+    const btnSaveCosts = document.getElementById('btnSaveProductCosts');
+    if (btnSaveCosts) {
+      btnSaveCosts.addEventListener('click', salvarCustosProdutos);
+    }
+
+    const pillContainer = document.getElementById('expenseCategoryPills');
+    if (pillContainer) {
+      pillContainer.querySelectorAll('[data-exp-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pillContainer.querySelectorAll('[data-exp-cat]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          AdminState.expenseCategoryFilter = btn.getAttribute('data-exp-cat');
+          renderizarDespesas();
+        });
+      });
+    }
+
+    const modal = document.getElementById('expenseModal');
+    const btnOpen = document.getElementById('btnOpenExpenseModal');
+    const btnClose = document.getElementById('btnCloseExpenseModal');
+    const form = document.getElementById('expenseForm');
+    const dateInput = document.getElementById('expenseDate');
+
+    if (btnOpen && modal) {
+      btnOpen.addEventListener('click', () => {
+        if (dateInput && !dateInput.value) {
+          dateInput.value = new Date().toISOString().slice(0, 10);
+        }
+        modal.classList.add('active');
+      });
+    }
+
+    if (btnClose && modal) {
+      btnClose.addEventListener('click', () => modal.classList.remove('active'));
+    }
+
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const desc = document.getElementById('expenseDesc').value.trim();
+        const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+        const dateVal = document.getElementById('expenseDate').value || new Date().toISOString().slice(0, 10);
+        const cat = document.getElementById('expenseCategory').value;
+        const notes = document.getElementById('expenseNotes').value.trim();
+
+        if (!desc || amount <= 0) {
+          showToast('Preencha a descrição e um valor válido!', 'error');
+          return;
+        }
+
+        const newExp = {
+          id: 'exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          descricao: desc,
+          valor: amount,
+          data: dateVal,
+          categoria: cat,
+          observacao: notes,
+          criado_em: new Date().toISOString()
+        };
+
+        AdminState.expenses.unshift(newExp);
+
+        try {
+          localStorage.setItem('brownie_expenses', JSON.stringify(AdminState.expenses));
+        } catch (err) {
+          console.warn('Erro ao salvar no localStorage:', err);
+        }
+
+        const sb = getSupabase();
+        if (sb) {
+          try {
+            await sb.from('despesas').insert([{
+              descricao: desc,
+              valor: amount,
+              data_despesa: dateVal,
+              categoria: cat,
+              observacoes: notes
+            }]);
+          } catch (err) {}
+        }
+
+        form.reset();
+        if (modal) modal.classList.remove('active');
+        atualizarCustosELucro();
+        showToast('Despesa cadastrada com sucesso! 🧾', 'success');
+      });
+    }
+
+    window.excluirDespesa = async function(id) {
+      if (!confirm('Deseja realmente excluir este lançamento de despesa?')) return;
+
+      AdminState.expenses = AdminState.expenses.filter(e => String(e.id) !== String(id));
+
+      try {
+        localStorage.setItem('brownie_expenses', JSON.stringify(AdminState.expenses));
+      } catch (err) {}
+
+      const sb = getSupabase();
+      if (sb) {
+        try {
+          if (!isNaN(Number(id))) {
+            await sb.from('despesas').delete().eq('id', Number(id));
+          }
+        } catch (err) {}
+      }
+
+      atualizarCustosELucro();
+      showToast('Despesa removida.', 'info');
+    };
+  }
+
   // ===================== INICIALIZAÇÃO =====================
   document.addEventListener('DOMContentLoaded', () => {
     initAuth();
@@ -1490,6 +1952,7 @@
     initToolbarEvents();
     initManualOrder();
     initCardapioManage();
+    initExpensesAndCosts();
 
     if (AdminState.authenticated) {
       carregarDadosCompletos();

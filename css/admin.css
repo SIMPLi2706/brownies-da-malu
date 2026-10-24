@@ -1458,3 +1458,54 @@ input, select, textarea {
   border-left: 5px solid #25D366;
   background: #F1F8E9;
 }
+
+/* ================= TAB: CUSTOS & LUCRO LÍQUIDO ================= */
+.cost-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cost-input-field {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 6px;
+  font-weight: 700;
+  color: var(--chocolate-darkest);
+  font-size: 0.88rem;
+  background: var(--admin-bg);
+  transition: border-color 0.2s;
+}
+
+.cost-input-field:focus {
+  outline: none;
+  border-color: var(--red);
+  background: #FFF;
+}
+
+.badge-expense-category {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.badge-insumos { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+.badge-embalagens { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+.badge-operacional { background: #F3E5F5; color: #6A1B9A; border: 1px solid #E1BEE7; }
+.badge-entrega { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+.badge-outros { background: #EEEEEE; color: #616161; border: 1px solid #E0E0E0; }
+
+.profit-positive {
+  color: #2E7D32;
+  font-weight: 800;
+}
+
+.profit-negative {
+  color: #C62828;
+  font-weight: 800;
+}

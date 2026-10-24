@@ -108,6 +108,9 @@
         <button class="admin-tab-btn" data-tab="metricas">
           📊 Métricas & Vendas
         </button>
+        <button class="admin-tab-btn" data-tab="custos">
+          💰 Custos & Lucro
+        </button>
         <button class="admin-tab-btn" data-tab="clientes">
           👥 Clientes
           <span class="tab-badge" id="badgeTotalClients">0</span>
@@ -271,6 +274,123 @@
         </div>
       </section>
 
+      <!-- ================= ABA CUSTOS & LUCRO LÍQUIDO ================= -->
+      <section class="admin-tab-content" id="tabCustos">
+        
+        <!-- RESUMO FINANCEIRO (FATURAMENTO, CUSTOS, LUCRO LÍQUIDO) -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-blue">💵</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Faturamento Bruto</span>
+              <span class="kpi-value" id="kpiCustosRevenue">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiCustosRevenueSub">Total das vendas</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-orange">📉</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Custos & Despesas</span>
+              <span class="kpi-value" id="kpiCustosTotal">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiCustosTotalSub">Insumos + Gastos fixos</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="border: 2px solid #2E7D32; background: linear-gradient(135deg, #FFFFFF, #F1F8E9);">
+            <div class="kpi-icon-wrap kpi-green">✨</div>
+            <div class="kpi-info">
+              <span class="kpi-label" style="color: #2E7D32; font-weight:800;">Lucro Líquido Real</span>
+              <span class="kpi-value" id="kpiNetProfit" style="color: #2E7D32;">R$ 0,00</span>
+              <span class="kpi-sub" id="kpiNetProfitSub">Limpo no seu bolso 🤎</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-purple">📊</div>
+            <div class="kpi-info">
+              <span class="kpi-label">Margem Líquida</span>
+              <span class="kpi-value" id="kpiNetMargin">0%</span>
+              <span class="kpi-sub">Rentabilidade média</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOIS BLOCOS: 1. FICHA TÉCNICA (CUSTO POR SABOR) / 2. DESPESAS -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px;">
+          
+          <!-- FICHA DE CUSTO POR SABOR -->
+          <div class="metric-panel" style="padding: 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <h3 style="margin:0; font-size:1.25rem;">🧁 Custo Unitário por Sabor (Ficha Técnica)</h3>
+                <small style="color:var(--chocolate-light);">Defina quanto gasta para produzir cada unidade (massa + recheio + pote/embalagem)</small>
+              </div>
+              <button type="button" class="btn-toolbar" id="btnSaveProductCosts" style="background:var(--green); color:#fff; border-color:var(--green); padding:6px 12px; font-size:0.82rem;">
+                💾 Salvar Custos
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table" style="font-size:0.88rem;">
+                <thead>
+                  <tr>
+                    <th>Sabor</th>
+                    <th>Venda</th>
+                    <th style="min-width:110px;">Seu Custo (R$)</th>
+                    <th>Lucro Unit.</th>
+                    <th>Margem</th>
+                  </tr>
+                </thead>
+                <tbody id="productCostsTableBody">
+                  <!-- Renderizado via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- REGISTRO DE DESPESAS OPERACIONAIS -->
+          <div class="metric-panel" style="padding: 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <h3 style="margin:0; font-size:1.25rem;">🧾 Gastos & Despesas Cadastradas</h3>
+                <small style="color:var(--chocolate-light);">Compras de ingredientes em atacado, embalagens, gás, etc.</small>
+              </div>
+              <button type="button" class="btn-header-action btn-new-order-manual" id="btnOpenExpenseModal" style="padding:6px 12px; font-size:0.82rem;">
+                ➕ Lançar Gasto
+              </button>
+            </div>
+
+            <div style="margin-bottom:12px; display:flex; gap:6px; flex-wrap:wrap;" id="expenseCategoryPills">
+              <button class="status-pill active" data-exp-cat="todas">Todas</button>
+              <button class="status-pill" data-exp-cat="insumos">🍫 Ingredientes</button>
+              <button class="status-pill" data-exp-cat="embalagens">📦 Embalagens</button>
+              <button class="status-pill" data-exp-cat="operacional">💡 Gás/Luz</button>
+              <button class="status-pill" data-exp-cat="outros">🏷️ Outros</button>
+            </div>
+
+            <div class="table-responsive" style="max-height:380px; overflow-y:auto;">
+              <table class="admin-table" style="font-size:0.88rem;">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="expensesTableBody">
+                  <!-- Renderizado via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
       <!-- ================= ABA 3: CLIENTES ================= -->
       <section class="admin-tab-content" id="tabClientes">
         <div class="toolbar-card">
@@ -401,6 +521,50 @@
         </div>
 
         <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Pedido no Painel 🍫</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL NOVO GASTO / DESPESA ===================== -->
+  <div class="modal-overlay" id="expenseModal">
+    <div class="modal-card" style="max-width:480px;">
+      <button class="modal-close-btn" id="btnCloseExpenseModal">&times;</button>
+      <h3 class="modal-title">🧾 Lançar Novo Gasto / Despesa</h3>
+      
+      <form id="expenseForm" style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Descrição da Despesa *</label>
+          <input type="text" id="expenseDesc" required class="toolbar-select" style="width:100%;" placeholder="Ex: Caixa de Leite Condensado (27un)">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Valor Total (R$) *</label>
+            <input type="number" step="0.01" min="0" id="expenseAmount" required class="toolbar-select" style="width:100%; font-weight:800; color:var(--red);" placeholder="0,00">
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:700;">Data do Gasto</label>
+            <input type="date" id="expenseDate" class="toolbar-select" style="width:100%;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Categoria</label>
+          <select id="expenseCategory" class="toolbar-select" style="width:100%;">
+            <option value="insumos">🍫 Ingredientes / Insumos (Leite condensado, chocolate, Ninho, etc.)</option>
+            <option value="embalagens">📦 Embalagens (Potes, sacolas, fitas, adesivos)</option>
+            <option value="operacional">💡 Operacional (Gás de cozinha, energia, água)</option>
+            <option value="entrega">🛵 Entregas / Combustível</option>
+            <option value="outros">🏷️ Outros Gastos</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700;">Observações (Opcional)</label>
+          <input type="text" id="expenseNotes" class="toolbar-select" style="width:100%;" placeholder="Ex: Comprado no Atacadão">
+        </div>
+
+        <button type="submit" class="btn-login-submit" style="margin-top:6px;">Salvar Despesa 💾</button>
       </form>
     </div>
   </div>
