@@ -1355,6 +1355,21 @@
     'depoimentos': 'viewDepoimentos'
   };
 
+  // Intercepta e bloqueia rolagem da página ao fundo quando a sidebar estiver aberta no celular
+  function handleBackgroundTouchMove(e) {
+    const sidebar = document.getElementById('adminSidebar');
+    if (sidebar && !sidebar.contains(e.target)) {
+      e.preventDefault();
+    }
+  }
+
+  function handleBackgroundWheel(e) {
+    const sidebar = document.getElementById('adminSidebar');
+    if (sidebar && !sidebar.contains(e.target)) {
+      e.preventDefault();
+    }
+  }
+
   function closeSidebar() {
     const sidebar = document.getElementById('adminSidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -1365,6 +1380,11 @@
       burger.classList.remove('active');
       burger.setAttribute('aria-expanded', 'false');
     }
+    document.documentElement.classList.remove('sidebar-open');
+    document.body.classList.remove('sidebar-open');
+
+    window.removeEventListener('touchmove', handleBackgroundTouchMove, { passive: false });
+    window.removeEventListener('wheel', handleBackgroundWheel, { passive: false });
   }
 
   function openSidebar() {
@@ -1377,6 +1397,11 @@
       burger.classList.add('active');
       burger.setAttribute('aria-expanded', 'true');
     }
+    document.documentElement.classList.add('sidebar-open');
+    document.body.classList.add('sidebar-open');
+
+    window.addEventListener('touchmove', handleBackgroundTouchMove, { passive: false });
+    window.addEventListener('wheel', handleBackgroundWheel, { passive: false });
   }
 
   function toggleSidebar() {
