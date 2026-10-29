@@ -44,8 +44,10 @@
 
 html {
   overflow-y: scroll;
-  scrollbar-gutter: stable;
+  overflow-x: hidden;
+  max-width: 100vw;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -57,6 +59,18 @@ body {
   font-weight: 500;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+}
+
+#adminApp {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
   min-height: 100vh;
 }
 
@@ -383,6 +397,10 @@ input, select, textarea {
 .breadcrumb-current {
   color: var(--cream);
   font-weight: 700;
+}
+
+.topbar-mobile-pill {
+  display: none;
 }
 
 .topbar-right {
@@ -2000,96 +2018,596 @@ body.sidebar-open {
 .admin-toast.error { border-left: 4px solid var(--red); }
 .admin-toast.info { border-left: 4px solid var(--gold); }
 
-/* ================= RESPONSIVIDADE PROFISSIONAL ================= */
+/* ================= RESPONSIVIDADE PROFISSIONAL PARA SMARTPHONES ================= */
 @media (max-width: 900px) {
   .btn-text-desktop {
     display: none !important;
   }
-  
   .topbar-page-breadcrumb {
     display: none !important;
   }
 }
 
 @media (max-width: 768px) {
+  /* Prevenção Absoluta de Transbordo Horizontal */
+  html, body, #adminApp {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+
+  /* Header Topbar Fixa e Compacta */
+  .admin-topbar {
+    width: 100% !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
   .admin-topbar-inner {
-    padding: 8px 12px;
+    padding: 8px 10px;
     gap: 8px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .admin-burger-btn {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    gap: 4px;
+    padding: 0;
+  }
+  .admin-burger-btn span {
+    width: 18px;
+  }
+
+  .admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    text-decoration: none;
   }
 
   .admin-brand img {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
   }
 
   .brand-name {
-    font-size: 1.05rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 105px;
   }
 
   .admin-badge {
     display: none;
   }
 
+  .topbar-mobile-pill {
+    display: inline-flex !important;
+    align-items: center;
+    background: rgba(229, 35, 28, 0.22);
+    border: 1px solid rgba(229, 35, 28, 0.45);
+    color: #FFCDD2;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
   .btn-topbar-icon {
-    padding: 7px 10px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .btn-topbar-icon svg {
+    width: 16px;
+    height: 16px;
   }
 
   .btn-topbar-cta {
-    padding: 7px 12px;
-    font-size: 0.82rem;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
-
+  .btn-topbar-cta svg {
+    width: 16px;
+    height: 16px;
+  }
   .btn-cta-label {
     display: none;
   }
 
+  /* Área Principal */
   .admin-main {
-    padding: 16px 12px 40px;
+    padding: 12px 10px 48px;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
 
+  .admin-page-view {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Cabeçalho da Página */
+  .page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
   .page-head-copy h2 {
-    font-size: 1.45rem;
+    font-size: 1.3rem;
+    line-height: 1.25;
+  }
+  .page-subtitle {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .page-head-actions {
+    width: 100%;
+  }
+  .page-head-actions .btn-head-action,
+  .page-head-actions .btn-topbar-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 12px;
   }
 
+  /* Painel de Métricas / Fichas Técnicas */
+  .costs-split-grid,
+  .metrics-charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .metric-panel {
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .panel-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .panel-header-row .btn-head-action {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 14px;
+  }
+
+  /* KPIs em 2 Colunas Compactas */
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   .kpi-card {
-    padding: 14px 12px !important;
+    padding: 12px 10px !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
   }
 
   .kpi-icon-wrap {
-    width: 38px !important;
-    height: 38px !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+  .kpi-icon-wrap svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  .kpi-info {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .kpi-label {
+    font-size: 0.68rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .kpi-value {
-    font-size: 1.3rem !important;
+    font-size: 1.15rem !important;
+    line-height: 1.2 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  .kpi-sub {
+    font-size: 0.66rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Pílulas de Filtros com Rolagem Horizontal Suave (Estilo App Nativo) */
+  .status-pills-wrap {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 10px !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .status-pills-wrap::-webkit-scrollbar {
+    display: none !important;
+  }
+  .status-pill {
+    flex-shrink: 0 !important;
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Barra de Busca e Filtros */
+  .toolbar-card {
+    padding: 12px 10px !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
+  }
+  .toolbar-row-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .toolbar-row-bottom {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .search-input-wrap {
+    width: 100% !important;
+  }
+  .toolbar-actions-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .toolbar-select {
+    width: 100%;
+  }
+
+  /* Cards de Pedidos */
   .orders-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .order-card {
+    border-radius: 16px !important;
+  }
+  .order-card-header {
+    padding: 12px 14px;
+  }
+  .order-card-body {
+    padding: 14px;
+    gap: 10px;
+  }
+  .order-card-actions {
+    padding: 10px 14px;
+    gap: 6px;
   }
 
-  .costs-split-grid {
+  /* Cards de Clientes (CRM) */
+  .crm-cards-grid {
     grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .customer-card {
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+  }
+  .customer-stats-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px 10px;
+  }
+  .customer-card-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .customer-card-actions button,
+  .customer-card-actions a {
+    width: 100%;
+    justify-content: center;
   }
 
+  /* Cardápio */
+  .menu-manage-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .menu-manage-card {
+    border-radius: 16px !important;
+  }
+  .menu-card-media {
+    height: 155px !important;
+  }
+
+  /* Depoimentos */
+  .reviews-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Modais no Smartphone */
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
   .modal-card {
-    padding: 22px 16px;
-    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    border-radius: 20px 20px 14px 14px;
+    max-height: 90vh;
+    width: 100%;
+  }
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
   }
 }
 
-@media (max-width: 380px) {
+/* Telas menores que 640px: Transformação da Ficha Técnica e Despesas em Cards */
+@media (max-width: 640px) {
+  /* Tabela de Custos por Sabor: Cards Nativos de Toque */
+  .metric-panel:has(#productCostsTableBody) .table-responsive,
+  #productCostsTableBody {
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+  .metric-panel:has(#productCostsTableBody) thead {
+    display: none !important;
+  }
+
+  #productCostsTableBody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  #productCostsTableBody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #FFFDF9 !important;
+    border: 1.5px solid var(--admin-border) !important;
+    border-radius: 14px !important;
+    padding: 12px 14px !important;
+    gap: 8px !important;
+    box-shadow: 0 2px 6px rgba(28, 13, 10, 0.04) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  #productCostsTableBody td {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 0.88rem !important;
+    width: 100% !important;
+  }
+
+  #productCostsTableBody td:nth-child(1) {
+    font-size: 1.05rem !important;
+    font-family: 'Baloo 2', sans-serif !important;
+    font-weight: 800 !important;
+    color: var(--chocolate-darkest) !important;
+    border-bottom: 1px dashed var(--admin-border) !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #productCostsTableBody td:nth-child(2)::before {
+    content: 'Preço Venda:';
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  #productCostsTableBody td:nth-child(3) {
+    background: var(--cream);
+    padding: 8px 10px !important;
+    border-radius: 10px;
+    border: 1px solid rgba(217, 164, 85, 0.35);
+    margin: 2px 0;
+  }
+  #productCostsTableBody td:nth-child(3)::before {
+    content: 'Seu Custo de Produção:';
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--chocolate-darkest);
+  }
+  #productCostsTableBody .cost-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #productCostsTableBody .cost-input-field {
+    width: 86px;
+    padding: 6px 8px;
+    font-size: 0.95rem;
+    text-align: right;
+    border-radius: 8px;
+    background: #FFF;
+  }
+
+  #productCostsTableBody td:nth-child(4)::before {
+    content: 'Lucro Líquido Unitário:';
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  #productCostsTableBody td:nth-child(5)::before {
+    content: 'Margem de Lucro:';
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  /* Tabela de Despesas Operacionais: Cards */
+  .metric-panel:has(#expensesTableBody) .table-responsive,
+  #expensesTableBody {
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+  .metric-panel:has(#expensesTableBody) thead {
+    display: none !important;
+  }
+
+  #expensesTableBody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  #expensesTableBody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #FFFDF9 !important;
+    border: 1.5px solid var(--admin-border) !important;
+    border-radius: 12px !important;
+    padding: 12px 14px !important;
+    gap: 6px !important;
+    box-shadow: 0 1px 4px rgba(28, 13, 10, 0.04) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  #expensesTableBody td {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 0.86rem !important;
+    width: 100% !important;
+  }
+
+  #expensesTableBody td:nth-child(2) {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: var(--chocolate-darkest) !important;
+    border-bottom: 1px dashed var(--admin-border) !important;
+    padding-bottom: 4px !important;
+  }
+
+  #expensesTableBody td:nth-child(3)::before {
+    content: 'Categoria:';
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  #expensesTableBody td:nth-child(1)::before {
+    content: 'Data:';
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  #expensesTableBody td:nth-child(4) {
+    font-weight: 800 !important;
+    color: var(--red) !important;
+    font-size: 1.05rem !important;
+    font-family: 'Baloo 2', sans-serif !important;
+  }
+  #expensesTableBody td:nth-child(4)::before {
+    content: 'Valor:';
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--chocolate-light);
+  }
+
+  #expensesTableBody td:nth-child(5) {
+    justify-content: flex-end !important;
+    margin-top: 4px !important;
+    padding-top: 6px !important;
+    border-top: 1px dashed var(--admin-border) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-name {
+    display: none !important;
+  }
   .kpi-grid {
     grid-template-columns: 1fr !important;
-  }
-  .brand-name {
-    font-size: 0.95rem;
   }
 }
 

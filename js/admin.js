@@ -1699,6 +1699,19 @@
       titleEl.textContent = PAGE_TITLES[targetKey] || 'Painel';
     }
 
+    const mobilePill = document.getElementById('topActivePageMobilePill');
+    if (mobilePill) {
+      const SHORT_TITLES = {
+        'pedidos': 'Pedidos',
+        'metricas': 'Métricas',
+        'custos': 'Custos',
+        'clientes': 'Clientes',
+        'cardapio': 'Cardápio',
+        'depoimentos': 'Depoimentos'
+      };
+      mobilePill.textContent = SHORT_TITLES[targetKey] || targetKey;
+    }
+
     // Atualizar hash na URL se necessário
     if (updateHash && window.location.hash !== `#${targetKey}`) {
       window.history.pushState(null, '', `#${targetKey}`);
