@@ -33,6 +33,9 @@ create policy "Painel pode gerenciar depoimentos"
   on public.depoimentos for all
   using (true);
 
+-- Garantir coluna itens_comprados na tabela de depoimentos
+alter table public.depoimentos add column if not exists itens_comprados text[] default '{}';
+
 -- 6. Habilitar Realtime para pedidos no Supabase (para alerta sonoro de novo pedido)
 do $$
 begin

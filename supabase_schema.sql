@@ -108,9 +108,13 @@ create table if not exists public.depoimentos (
   cidade text default 'Porto Velho - RO',
   estrelas integer not null check (estrelas >= 1 and estrelas <= 5),
   comentario text not null,
+  itens_comprados text[] default '{}',
   aprovado boolean not null default true,
   criado_em timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Garantir coluna itens_comprados caso a tabela já existisse
+alter table public.depoimentos add column if not exists itens_comprados text[] default '{}';
 
 -- Ativar segurança em nível de linha (RLS)
 alter table public.depoimentos enable row level security;

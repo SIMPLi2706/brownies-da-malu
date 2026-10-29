@@ -280,6 +280,37 @@ window.BrownieApp = {
     return data || [];
   },
 
+  // Helpers para Itens Elogiados no Depoimento
+  extrairItensDepoimento(t) {
+    if (!t) return [];
+    if (Array.isArray(t.itens_comprados) && t.itens_comprados.length > 0) {
+      return t.itens_comprados.map(s => String(s).trim()).filter(Boolean);
+    }
+    if (typeof t.itens_comprados === 'string') {
+      try {
+        const parsed = JSON.parse(t.itens_comprados);
+        if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+      } catch (e) {
+        if (t.itens_comprados.includes(',')) {
+          return t.itens_comprados.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+    }
+    // Fallback: verificar se foi embutido no texto do comentário [Provou: item1 • item2]
+    if (t.comentario && typeof t.comentario === 'string') {
+      const match = t.comentario.match(/\[Provou:\s*([^\]]+)\]/i);
+      if (match && match[1]) {
+        return match[1].split(/•|,/).map(s => s.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  },
+
+  limparComentarioParaExibir(comentario) {
+    if (!comentario) return '';
+    return String(comentario).replace(/\s*\[Provou:\s*[^\]]+\]/gi, '').trim();
+  },
+
   // Carregar Depoimentos Reais do Supabase
   async carregarDepoimentos() {
     const testGrid = document.getElementById('testGrid');
@@ -296,10 +327,9 @@ window.BrownieApp = {
         .select('*')
         .eq('aprovado', true)
         .order('criado_em', { ascending: false })
-        .limit(6);
+        .limit(9);
 
       if (error || !data || data.length === 0) {
-        // Se ainda não houver nenhum depoimento no banco, exibe mensagem amigável ou mantém padrão
         return;
       }
 
@@ -314,11 +344,27 @@ window.BrownieApp = {
           .join('')
           .toUpperCase();
 
+        const itens = this.extrairItensDepoimento(t);
+        const cleanComment = this.limparComentarioParaExibir(t.comentario);
+
+        const itensHtml = itens.length > 0 ? `
+          <div class="test-praised-items">
+            <span class="test-praised-label">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Provou e aprovou:
+            </span>
+            <div class="test-praised-tags">
+              ${itens.map(item => `<span class="praised-badge">${escapeHtml(item)}</span>`).join('')}
+            </div>
+          </div>
+        ` : '';
+
         const card = document.createElement('div');
         card.className = 'test-card in';
         card.innerHTML = `
           <span class="quote-mark">&ldquo;</span>
-          <p class="quote">${escapeHtml(t.comentario)}</p>
+          <p class="quote">${escapeHtml(cleanComment)}</p>
+          ${itensHtml}
           <div class="test-person">
             <div class="test-avatar">${initials}</div>
             <div>
@@ -331,36 +377,72 @@ window.BrownieApp = {
         testGrid.appendChild(card);
       });
 
-      // Remove a nota de "depoimentos de exemplo" caso existam depoimentos reais
+      // Atualiza nota de rodapé
       const note = document.querySelector('#depoimentos .price-note');
-      if (note) note.textContent = 'Depoimentos reais de quem já se apaixonou pelos brownies da Malu 🤎';
+      if (note) note.textContent = 'Depoimentos reais de quem já se apaixonou pelos brownies da Malu.';
     } catch (e) {
       console.warn('Erro ao carregar depoimentos reais:', e);
     }
   },
 
   // Enviar novo Depoimento Real
-  async enviarDepoimento({ nome, estrelas, comentario, cidade }) {
+  async enviarDepoimento({ nome, estrelas, comentario, cidade, itens_comprados }) {
     if (!supabaseClient) throw new Error('Configure o Supabase primeiro.');
 
-    const payload = {
+    const itensArray = Array.isArray(itens_comprados)
+      ? itens_comprados.map(s => String(s).trim()).filter(Boolean)
+      : [];
+
+    const basePayload = {
       user_id: this.currentUser ? this.currentUser.id : null,
       nome: nome || this.currentProfile?.nome || 'Cliente anônimo',
       cidade: cidade || 'Porto Velho - RO',
       estrelas: parseInt(estrelas, 10) || 5,
-      comentario,
-      aprovado: true // Definido como true para aparecer de imediato
+      aprovado: true // Visível de imediato
     };
 
-    const { data, error } = await supabaseClient
-      .from('depoimentos')
-      .insert([payload])
-      .select()
-      .single();
+    let savedData = null;
 
-    if (error) throw error;
+    // Tentativa 1: Inserir com a coluna nativa itens_comprados
+    try {
+      const { data, error } = await supabaseClient
+        .from('depoimentos')
+        .insert([{
+          ...basePayload,
+          comentario: (comentario || '').trim(),
+          itens_comprados: itensArray
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      savedData = data;
+    } catch (err) {
+      // Se a coluna ainda não existir no Postgres do banco do cliente:
+      const isMissingCol = err?.code === '42703' || (err?.message && err.message.toLowerCase().includes('itens_comprados'));
+      if (isMissingCol) {
+        const commentWithMeta = itensArray.length > 0
+          ? `${(comentario || '').trim()}\n\n[Provou: ${itensArray.join(' • ')}]`
+          : (comentario || '').trim();
+
+        const { data, error: err2 } = await supabaseClient
+          .from('depoimentos')
+          .insert([{
+            ...basePayload,
+            comentario: commentWithMeta
+          }])
+          .select()
+          .single();
+
+        if (err2) throw err2;
+        savedData = data;
+      } else {
+        throw err;
+      }
+    }
+
     await this.carregarDepoimentos();
-    return data;
+    return savedData;
   }
 };
 

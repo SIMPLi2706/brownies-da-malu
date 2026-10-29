@@ -377,9 +377,27 @@
 
   // ---------- Testimonials Iniciais / Fallback ----------
   const fallbackTestimonials = [
-    { name:'Fernanda A.', quote:'O brownie de Ninho com Morango sumiu em cinco minutos aqui em casa. Já virou pedido fixo!', initials:'FA' },
-    { name:'Rafael M.', quote:'Entrega certinha no horário combinado e o sabor tradicional é surpreendentemente bom, bem molhadinho.', initials:'RM' },
-    { name:'Camila S.', quote:'Pedi a caixa presente pro aniversário da minha mãe e ela amou. Recomendo demais!', initials:'CS' },
+    { 
+      name: 'Fernanda A.', 
+      cidade: 'Porto Velho - RO',
+      quote: 'O brownie de Ninho com Morango sumiu em cinco minutos aqui em casa. Já virou pedido fixo!', 
+      initials: 'FA',
+      itens_comprados: ['Ninho com Morango', 'Chocolate Tradicional']
+    },
+    { 
+      name: 'Rafael M.', 
+      cidade: 'Porto Velho - RO',
+      quote: 'Entrega certinha no horário combinado e o sabor tradicional é surpreendentemente bom, bem molhadinho.', 
+      initials: 'RM',
+      itens_comprados: ['Chocolate Tradicional']
+    },
+    { 
+      name: 'Camila S.', 
+      cidade: 'Porto Velho - RO',
+      quote: 'Pedi a caixa presente pro aniversário da minha mãe e ela amou. Recomendo demais!', 
+      initials: 'CS',
+      itens_comprados: ['Caixa Presente', 'Brownie no Pote — Dois Amores']
+    },
   ];
   const star = `<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.3 4.1 1 5.8L10 14.8 4.8 17.5l1-5.8L1.5 7.6l5.9-.8L10 1.5Z"/></svg>`;
   const testGrid = document.getElementById('testGrid');
@@ -387,13 +405,28 @@
     fallbackTestimonials.forEach(t => {
       const card = document.createElement('div');
       card.className = 'test-card reveal';
+      const itens = t.itens_comprados || [];
+      const itensHtml = itens.length > 0 ? `
+        <div class="test-praised-items">
+          <span class="test-praised-label">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Provou e aprovou:
+          </span>
+          <div class="test-praised-tags">
+            ${itens.map(item => `<span class="praised-badge">${escapeHtml(item)}</span>`).join('')}
+          </div>
+        </div>
+      ` : '';
+
       card.innerHTML = `
         <span class="quote-mark">&ldquo;</span>
-        <p class="quote">${t.quote}</p>
+        <p class="quote">${escapeHtml(t.quote)}</p>
+        ${itensHtml}
         <div class="test-person">
           <div class="test-avatar">${t.initials}</div>
           <div>
-            <div class="test-name">${t.name}</div>
+            <div class="test-name">${escapeHtml(t.name)}</div>
+            <div class="test-city" style="font-size:0.75rem; color:var(--chocolate-light);">${escapeHtml(t.cidade || 'Porto Velho - RO')}</div>
             <div class="test-stars">${star.repeat(5)}</div>
           </div>
         </div>
@@ -995,7 +1028,125 @@
     });
   }
 
-  // ---------- Modal Depoimento / Avaliação ----------
+  // ---------- Modal Depoimento / Avaliação com Escolha de Itens ----------
+  const selectedReviewItems = new Set();
+  const reviewFlavorPillsContainer = document.getElementById('reviewFlavorPills');
+  const reviewSelectedPreview = document.getElementById('reviewSelectedPreview');
+  const reviewSelectedTags = document.getElementById('reviewSelectedTags');
+  const reviewItemsCountHint = document.getElementById('reviewItemsCountHint');
+  const reviewCustomItemInput = document.getElementById('reviewCustomItemInput');
+  const btnAddReviewCustomItem = document.getElementById('btnAddReviewCustomItem');
+
+  function getBaseReviewFlavors() {
+    const list = flavors.map(f => f.name);
+    if (!list.includes('Caixa Presente')) {
+      list.push('Caixa Presente');
+    }
+    return list;
+  }
+
+  function renderReviewFlavorPills() {
+    if (!reviewFlavorPillsContainer) return;
+    const baseList = getBaseReviewFlavors();
+    const allItems = Array.from(new Set([...baseList, ...selectedReviewItems]));
+
+    reviewFlavorPillsContainer.innerHTML = allItems.map(item => {
+      const isSelected = selectedReviewItems.has(item);
+      return `
+        <button type="button" class="review-flavor-pill ${isSelected ? 'active' : ''}" data-item="${escapeHtml(item)}">
+          <span class="pill-check">
+            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>${escapeHtml(item)}</span>
+        </button>
+      `;
+    }).join('');
+
+    reviewFlavorPillsContainer.querySelectorAll('.review-flavor-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const item = pill.getAttribute('data-item');
+        if (!item) return;
+        if (selectedReviewItems.has(item)) {
+          selectedReviewItems.delete(item);
+          pill.classList.remove('active');
+        } else {
+          selectedReviewItems.add(item);
+          pill.classList.add('active');
+        }
+        updateReviewSelectedPreview();
+      });
+    });
+  }
+
+  function updateReviewSelectedPreview() {
+    if (!reviewSelectedPreview || !reviewSelectedTags) return;
+
+    if (selectedReviewItems.size === 0) {
+      reviewSelectedPreview.style.display = 'none';
+      if (reviewItemsCountHint) {
+        reviewItemsCountHint.textContent = 'Toque para selecionar os itens que deseja elogiar';
+      }
+      return;
+    }
+
+    reviewSelectedPreview.style.display = 'block';
+    if (reviewItemsCountHint) {
+      reviewItemsCountHint.textContent = `${selectedReviewItems.size} ${selectedReviewItems.size === 1 ? 'delícia selecionada' : 'delícias selecionadas'} para o elogio`;
+    }
+
+    reviewSelectedTags.innerHTML = Array.from(selectedReviewItems).map(item => `
+      <span class="review-selected-tag">
+        <span>${escapeHtml(item)}</span>
+        <button type="button" class="review-selected-tag-remove" data-remove="${escapeHtml(item)}" title="Remover item" aria-label="Remover">✕</button>
+      </span>
+    `).join('');
+
+    reviewSelectedTags.querySelectorAll('.review-selected-tag-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.getAttribute('data-remove');
+        if (item) {
+          selectedReviewItems.delete(item);
+          if (reviewFlavorPillsContainer) {
+            reviewFlavorPillsContainer.querySelectorAll('.review-flavor-pill').forEach(p => {
+              if (p.getAttribute('data-item') === item) {
+                p.classList.remove('active');
+              }
+            });
+          }
+          updateReviewSelectedPreview();
+        }
+      });
+    });
+  }
+
+  function addCustomReviewItem() {
+    if (!reviewCustomItemInput) return;
+    const rawVal = reviewCustomItemInput.value.trim();
+    if (!rawVal) {
+      reviewCustomItemInput.focus();
+      return;
+    }
+    const cleanItem = rawVal.charAt(0).toUpperCase() + rawVal.slice(1);
+    selectedReviewItems.add(cleanItem);
+    reviewCustomItemInput.value = '';
+    renderReviewFlavorPills();
+    updateReviewSelectedPreview();
+    showToast(`"${cleanItem}" adicionado à lista para elogiar!`, 'info');
+  }
+
+  if (btnAddReviewCustomItem) {
+    btnAddReviewCustomItem.addEventListener('click', addCustomReviewItem);
+  }
+
+  if (reviewCustomItemInput) {
+    reviewCustomItemInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCustomReviewItem();
+      }
+    });
+  }
+
   const btnOpenReview = document.getElementById('btnOpenReviewModal');
   if (btnOpenReview) {
     btnOpenReview.addEventListener('click', () => {
@@ -1003,6 +1154,16 @@
       if (app && app.currentProfile) {
         document.getElementById('reviewName').value = app.currentProfile.nome || '';
       }
+
+      // Se o usuário tiver itens na sacola e ainda não tiver selecionado itens, sugere os da sacola!
+      if (selectedReviewItems.size === 0 && window.BrownieCart && window.BrownieCart.items && window.BrownieCart.items.length > 0) {
+        window.BrownieCart.items.forEach(it => {
+          if (it.name) selectedReviewItems.add(it.name);
+        });
+      }
+
+      renderReviewFlavorPills();
+      updateReviewSelectedPreview();
       abrirModal('reviewModal');
     });
   }
@@ -1031,18 +1192,67 @@
       const comentario = document.getElementById('reviewComment').value.trim();
       const submitBtn = formReview.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
+      const itens_comprados = Array.from(selectedReviewItems);
 
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Enviando...';
+
         await window.BrownieApp.enviarDepoimento({
           nome,
           cidade,
           estrelas: selectedRating,
-          comentario
+          comentario,
+          itens_comprados
         });
-        showToast('Muito obrigado! Sua avaliação foi publicada com carinho 🤎', 'success');
+
+        showToast('Muito obrigado! Sua avaliação foi publicada com carinho!', 'success');
+
+        // Atualiza imediatamente a visualização na página
+        if (testGrid) {
+          const initials = (nome || 'C')
+            .split(' ')
+            .map(n => n[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+
+          const itensHtml = itens_comprados.length > 0 ? `
+            <div class="test-praised-items">
+              <span class="test-praised-label">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Provou e aprovou:
+              </span>
+              <div class="test-praised-tags">
+                ${itens_comprados.map(item => `<span class="praised-badge">${escapeHtml(item)}</span>`).join('')}
+              </div>
+            </div>
+          ` : '';
+
+          const starSvg = `<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.3 4.1 1 5.8L10 14.8 4.8 17.5l1-5.8L1.5 7.6l5.9-.8L10 1.5Z"/></svg>`;
+
+          const newCard = document.createElement('div');
+          newCard.className = 'test-card in';
+          newCard.innerHTML = `
+            <span class="quote-mark">&ldquo;</span>
+            <p class="quote">${escapeHtml(comentario)}</p>
+            ${itensHtml}
+            <div class="test-person">
+              <div class="test-avatar">${initials}</div>
+              <div>
+                <div class="test-name">${escapeHtml(nome)}</div>
+                <div class="test-city" style="font-size:0.75rem; color:var(--chocolate-light);">${escapeHtml(cidade || 'Porto Velho - RO')}</div>
+                <div class="test-stars">${starSvg.repeat(Math.max(1, Math.min(5, selectedRating)))}</div>
+              </div>
+            </div>
+          `;
+          testGrid.prepend(newCard);
+        }
+
         formReview.reset();
+        selectedReviewItems.clear();
+        renderReviewFlavorPills();
+        updateReviewSelectedPreview();
         fecharModal('reviewModal');
       } catch (err) {
         showToast(err.message || 'Erro ao enviar avaliação.', 'error');

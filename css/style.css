@@ -665,6 +665,57 @@
   .test-stars{ display:flex; gap:2px; margin-top:2px; }
   .test-stars svg{ width:13px; height:13px; color:var(--gold); }
 
+  /* Itens elogiados no depoimento */
+  .test-praised-items {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    background: var(--cream);
+    border: 1px solid rgba(217, 164, 85, 0.35);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .test-praised-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--red);
+  }
+  .test-praised-label svg {
+    flex-shrink: 0;
+    stroke: var(--red);
+  }
+  .test-praised-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .praised-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--white);
+    color: var(--chocolate-darkest);
+    border: 1px solid rgba(44, 24, 16, 0.12);
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.25;
+    box-shadow: 0 1px 3px rgba(44, 24, 16, 0.04);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .praised-badge:hover {
+    transform: translateY(-1px);
+    border-color: var(--gold);
+  }
+
   @media (max-width:900px){
     .testimonials{ padding:54px 0; }
     .test-grid{ grid-template-columns:1fr; gap:16px; }
@@ -972,6 +1023,200 @@
 }
 .star-rating .star:hover{
   transform:scale(1.2);
+}
+
+/* ===================== SELEÇÃO DE ITENS NO FORMULÁRIO DE AVALIAÇÃO ===================== */
+.review-items-section {
+  background: var(--white);
+  border: 1.5px solid var(--cream-dim);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(44, 24, 16, 0.03);
+}
+.review-items-header {
+  margin-bottom: 10px;
+}
+.review-items-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--chocolate-light);
+  margin-top: 2px;
+}
+.review-flavor-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.review-flavor-pill {
+  appearance: none;
+  background: var(--cream);
+  color: var(--chocolate-darkest);
+  border: 1.5px solid rgba(44, 24, 16, 0.16);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s var(--ease);
+  user-select: none;
+}
+.review-flavor-pill:hover {
+  border-color: var(--gold);
+  background: #FFFDF9;
+  transform: translateY(-1px);
+}
+.review-flavor-pill .pill-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(44, 24, 16, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.review-flavor-pill .pill-check svg {
+  display: none;
+}
+.review-flavor-pill.active {
+  background: var(--chocolate-darkest);
+  color: var(--cream);
+  border-color: var(--chocolate-darkest);
+  box-shadow: 0 2px 6px rgba(44, 24, 16, 0.18);
+}
+.review-flavor-pill.active .pill-check {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.review-flavor-pill.active .pill-check svg {
+  display: block;
+  stroke: var(--chocolate-darkest);
+}
+
+/* Campo para adicionar item extra / personalizado */
+.review-add-custom-wrap {
+  margin-top: 4px;
+}
+.review-custom-input-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cream);
+  border: 1.5px dashed rgba(44, 24, 16, 0.25);
+  border-radius: 10px;
+  padding: 4px 6px 4px 10px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.review-custom-input-box:focus-within {
+  background: var(--white);
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(229, 35, 28, 0.12);
+}
+.review-input-icon {
+  color: var(--chocolate-light);
+  flex-shrink: 0;
+}
+.review-custom-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.84rem;
+  color: var(--chocolate-darkest);
+  outline: none;
+  padding: 5px 0;
+}
+.review-custom-input::placeholder {
+  color: #9E857E;
+  font-size: 0.8rem;
+}
+.btn-add-review-item {
+  appearance: none;
+  background: var(--chocolate-dark);
+  color: var(--cream);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.btn-add-review-item:hover {
+  background: var(--red);
+  transform: translateY(-1px);
+}
+
+/* Preview dos itens selecionados dentro do modal */
+.review-selected-preview {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(44, 24, 16, 0.12);
+}
+.review-selected-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--chocolate-light);
+  margin-bottom: 6px;
+}
+.review-selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.review-selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(229, 35, 28, 0.08);
+  border: 1px solid rgba(229, 35, 28, 0.28);
+  color: var(--red);
+  border-radius: 16px;
+  padding: 3px 8px 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: 'Baloo 2', sans-serif;
+  animation: tagPopIn 0.2s ease-out;
+}
+@keyframes tagPopIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.review-selected-tag-remove {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.75;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.review-selected-tag-remove:hover {
+  opacity: 1;
+  transform: scale(1.2);
 }
 
 .order-product-card{

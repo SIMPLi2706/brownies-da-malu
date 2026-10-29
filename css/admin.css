@@ -1927,6 +1927,43 @@ body.sidebar-open {
   gap: 10px;
 }
 
+.review-praised-items {
+  background: var(--admin-bg);
+  border: 1px solid rgba(217, 164, 85, 0.28);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+.praised-items-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  margin-bottom: 5px;
+}
+.praised-items-title svg {
+  flex-shrink: 0;
+  stroke: var(--primary);
+}
+.praised-items-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.praised-chip {
+  background: #FFFFFF;
+  color: var(--chocolate-darkest);
+  border: 1px solid rgba(44, 24, 16, 0.12);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
 /* ================= TOASTS ================= */
 .admin-toast-container {
   position: fixed;

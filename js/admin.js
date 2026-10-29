@@ -1459,6 +1459,35 @@
   }
 
   // ===================== ABA 5: DEPOIMENTOS =====================
+  function extrairItensDepoimentoAdmin(r) {
+    if (!r) return [];
+    if (Array.isArray(r.itens_comprados) && r.itens_comprados.length > 0) {
+      return r.itens_comprados.map(s => String(s).trim()).filter(Boolean);
+    }
+    if (typeof r.itens_comprados === 'string') {
+      try {
+        const parsed = JSON.parse(r.itens_comprados);
+        if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+      } catch (e) {
+        if (r.itens_comprados.includes(',')) {
+          return r.itens_comprados.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+    }
+    if (r.comentario && typeof r.comentario === 'string') {
+      const match = r.comentario.match(/\[Provou:\s*([^\]]+)\]/i);
+      if (match && match[1]) {
+        return match[1].split(/•|,/).map(s => s.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  }
+
+  function limparComentarioAdmin(comentario) {
+    if (!comentario) return '';
+    return String(comentario).replace(/\s*\[Provou:\s*[^\]]+\]/gi, '').trim();
+  }
+
   function renderizarDepoimentos() {
     const grid = document.getElementById('reviewsManageGrid');
     if (!grid) return;
@@ -1483,6 +1512,21 @@
       ).join('');
       const dataStr = r.criado_em ? new Date(r.criado_em).toLocaleDateString('pt-BR') : '';
 
+      const itens = extrairItensDepoimentoAdmin(r);
+      const cleanComment = limparComentarioAdmin(r.comentario);
+
+      const itensHtml = itens.length > 0 ? `
+        <div class="review-praised-items">
+          <div class="praised-items-title">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Itens elogiados:
+          </div>
+          <div class="praised-items-chips">
+            ${itens.map(item => `<span class="praised-chip">${escapeHtml(item)}</span>`).join('')}
+          </div>
+        </div>
+      ` : '';
+
       return `
         <div class="review-manage-card" style="${isAprovado ? '' : 'opacity:0.6; background:#FAFAFA;'}">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1492,7 +1536,8 @@
             </span>
           </div>
 
-          <p class="review-comment">"${escapeHtml(r.comentario)}"</p>
+          <p class="review-comment">"${escapeHtml(cleanComment)}"</p>
+          ${itensHtml}
 
           <div class="review-author-row">
             <div>
