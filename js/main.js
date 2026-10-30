@@ -155,6 +155,7 @@
     { name:"Ninho com Morango", desc:"Creme de leite Ninho com morango fresquinho no brownie de chocolate.", price:"R$ 14", rawPrice:14, img:"img/sabor-ninho-com-morango.jpg" },
     { name:"Chocolate Tradicional", desc:"Brownie bem macio com recheio cremoso de chocolate.", price:"R$ 12", rawPrice:12, img:"img/sabor-chocolate-tradicional.jpg" },
     { name:"Brownie de Paçoca", desc:"Creme suave com paçoca crocante em cada mordida.", price:"R$ 12", rawPrice:12, img:"img/sabor-brownie-de-pacoca.jpg" },
+    { name:"Brownie no Palito", desc:"Brownie artesanal macio no palito, banhado em uma casquinha crocante e generosa de puro chocolate.", price:"R$ 15", rawPrice:15, img:"img/sabor-brownie-no-palito.jpg" },
     { name:"Brownie no Pote — Dois Amores", desc:"Camadas generosas de brigadeiro de chocolate, creme de Ninho aveludado e pedaços suculentos de brownie.", price:"R$ 18", rawPrice:18, img:"img/sabor-copo-dois-amores.jpg" },
     { name:"Brownie no Pote — Chocolate Tradicional", desc:"Mousse cremosa de puro chocolate em harmonia com brownie macio e pedaços crocantes em cada colherada.", price:"R$ 18", rawPrice:18, img:"img/sabor-copo-chocolate-tradicional.jpg" },
     { name:"Brownie no Pote — Doce de Leite com Ninho", desc:"Doce de leite artesanal cremoso, creme suave de Leite Ninho e muito brownie para saborear de colher.", price:"R$ 18", rawPrice:18, img:"img/sabor-copo-doce-de-leite-com-ninho.jpg" }

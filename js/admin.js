@@ -22,6 +22,7 @@
       "Brownie no Pote — Dois Amores": 6.50,
       "Brownie no Pote — Chocolate Tradicional": 6.00,
       "Brownie no Pote — Doce de Leite com Ninho": 6.20,
+      "Brownie no Palito": 5.00,
       "Chocolate com Maracujá": 5.00,
       "Ninho com Morango": 5.20,
       "Chocolate Tradicional": 4.00,
@@ -33,6 +34,7 @@
       { name: "Brownie no Pote — Dois Amores", price: "R$ 18", rawPrice: 18, img: "img/sabor-copo-dois-amores.jpg", desc: "Brigadeiro, creme de Ninho e brownie molhadinho." },
       { name: "Brownie no Pote — Chocolate Tradicional", price: "R$ 18", rawPrice: 18, img: "img/sabor-copo-chocolate-tradicional.jpg", desc: "Mousse cremosa de puro chocolate e brownie artesanal." },
       { name: "Brownie no Pote — Doce de Leite com Ninho", price: "R$ 18", rawPrice: 18, img: "img/sabor-copo-doce-de-leite-com-ninho.jpg", desc: "Doce de leite artesanal, Ninho cremoso e muito brownie." },
+      { name: "Brownie no Palito", price: "R$ 15", rawPrice: 15, img: "img/sabor-brownie-no-palito.jpg", desc: "Brownie macio no palito com casquinha crocante de chocolate." },
       { name: "Chocolate com Maracujá", price: "R$ 14", rawPrice: 14, img: "img/sabor-chocolate-com-maracuja.jpg", desc: "Mousse de maracujá sobre brownie molhadinho." },
       { name: "Ninho com Morango", price: "R$ 14", rawPrice: 14, img: "img/sabor-ninho-com-morango.jpg", desc: "Creme de Ninho com morango e brownie." },
       { name: "Chocolate Tradicional", price: "R$ 12", rawPrice: 12, img: "img/sabor-chocolate-tradicional.jpg", desc: "Brownie macio com recheio cremoso de chocolate." },
@@ -1397,7 +1399,8 @@
     grid.innerHTML = AdminState.flavors.map(f => {
       const isOutOfStock = AdminState.stockStatus[f.name] === false;
       const isPote = (f.name || '').toLowerCase().includes('pote');
-      const categoryTag = isPote ? 'Brownie no Pote' : 'Gourmet Artesanal';
+      const isPalito = (f.name || '').toLowerCase().includes('palito');
+      const categoryTag = isPote ? 'Brownie no Pote' : (isPalito ? 'Brownie no Palito' : 'Gourmet Artesanal');
 
       return `
         <div class="menu-manage-card ${isOutOfStock ? 'out-of-stock' : 'in-stock'}">
